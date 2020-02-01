@@ -27,7 +27,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     private int mDisplayOffset = 0;
     protected Scroller mScroller;
     private GestureDetector mGesture;
-    private Queue<View> mRemovedViewQueue = new LinkedList<View>();
+    private Queue<View> mRemovedViewQueue = new LinkedList<>();
     private OnItemSelectedListener mOnItemSelected;
     private OnItemClickListener mOnItemClicked;
     private OnItemLongClickListener mOnItemLongClicked;
@@ -87,7 +87,8 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         getParent().requestDisallowInterceptTouchEvent(true);
         return mGesture.onTouchEvent(ev);
-    };
+    }
+
     @Override
     public ListAdapter getAdapter() {
         return mAdapter;

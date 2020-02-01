@@ -21,6 +21,6 @@ class TxtChar {
         return ("ShowChar [chardata=" + chardata + ", Selected=" + selected + ", TopLeftPosition=" + topLeftPosition
                 + ", TopRightPosition=" + topRightPosition + ", BottomLeftPosition=" + bottomLeftPosition
                 + ", BottomRightPosition=" + bottomRightPosition + ", charWidth=" + charWidth + ", Index=" + Index
-                + "]");
+                + "]")
     }
 }

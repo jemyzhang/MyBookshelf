@@ -135,7 +135,7 @@ class ChapterProvider {
                     //记录每个字的位置
                     char[] cs = subStr.toCharArray();
                     TxtLine txtList = new TxtLine();//每一行
-                    txtList.setCharsData(new ArrayList<TxtChar>());
+                    txtList.setCharsData(new ArrayList<>());
                     for (char c : cs) {
                         String mesasrustr = String.valueOf(c);
                         float charwidth = pageLoader.mTextPaint.measureText(mesasrustr);

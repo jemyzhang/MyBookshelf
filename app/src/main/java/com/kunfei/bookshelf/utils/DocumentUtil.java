@@ -44,9 +44,7 @@ public class DocumentUtil {
             return false;
         fileName = filenameFilter(Uri.decode(fileName));
         DocumentFile file = parent.findFile(fileName);
-        if (file != null && file.exists())
-            return true;
-        return false;
+        return file != null && file.exists();
     }
 
     public static DocumentFile createDirIfNotExist(Context context, String rootPath, String... subDirs) {
@@ -281,8 +279,8 @@ public class DocumentUtil {
 
     public static DocumentFile getDirDocument(DocumentFile root, String... subDirs) {
         DocumentFile parent = root;
-        for (int i = 0; i < subDirs.length; i++) {
-            String subDirName = Uri.decode(subDirs[i]);
+        for (String dir : subDirs) {
+            String subDirName = Uri.decode(dir);
             DocumentFile subDir = parent.findFile(subDirName);
             if (subDir != null)
                 parent = subDir;

@@ -32,7 +32,6 @@ import com.kunfei.bookshelf.help.permission.PermissionsCompat;
 import com.kunfei.bookshelf.model.BookSourceManager;
 import com.kunfei.bookshelf.presenter.BookSourcePresenter;
 import com.kunfei.bookshelf.presenter.contract.BookSourceContract;
-import com.kunfei.bookshelf.service.ShareService;
 import com.kunfei.bookshelf.utils.ACache;
 import com.kunfei.bookshelf.utils.FileUtils;
 import com.kunfei.bookshelf.utils.StringUtils;
@@ -289,9 +288,6 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
             case R.id.action_import_book_source_onLine:
                 importBookSourceOnLine();
                 break;
-            case R.id.action_import_book_source_rwm:
-                scanBookSource();
-                break;
             case R.id.action_revert_selection:
                 revertSelection();
                 break;
@@ -312,9 +308,6 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
                 break;
             case R.id.show_enabled:
                 searchView.setQuery("enabled", false);
-                break;
-            case R.id.action_share_wifi:
-                ShareService.startThis(this, adapter.getSelectDataList());
                 break;
             case android.R.id.home:
                 finish();
@@ -351,11 +344,6 @@ public class BookSourceActivity extends MBaseActivity<BookSourceContract.Present
 
     public int getSort() {
         return preferences.getInt("SourceSort", 0);
-    }
-
-    private void scanBookSource() {
-        Intent intent = new Intent(this, QRCodeScanActivity.class);
-        startActivityForResult(intent, REQUEST_QR);
     }
 
     private void addBookSource() {

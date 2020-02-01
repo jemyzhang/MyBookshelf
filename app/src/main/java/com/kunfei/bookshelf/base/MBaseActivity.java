@@ -132,51 +132,16 @@ public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T
      */
     protected void initImmersionBar() {
         try {
-            View actionBar = findViewById(R.id.action_bar);
-            if (isImmersionBarEnabled()) {
-                if (getSupportActionBar() != null && actionBar != null && actionBar.getVisibility() == View.VISIBLE) {
-                    mImmersionBar.statusBarColorInt(ThemeStore.primaryColor(this));
-                } else {
-                    mImmersionBar.transparentStatusBar();
-                }
-            } else {
-                if (getSupportActionBar() != null && actionBar != null && actionBar.getVisibility() == View.VISIBLE) {
-                    mImmersionBar.statusBarColorInt(ThemeStore.statusBarColor(this));
-                } else {
-                    mImmersionBar.statusBarColor(R.color.status_bar_bag);
-                }
-            }
+            mImmersionBar.transparentStatusBar();
         } catch (Exception ignored) {
         }
         try {
-            if (isImmersionBarEnabled() && ColorUtil.isColorLight(ThemeStore.primaryColor(this))) {
-                mImmersionBar.statusBarDarkFont(true, 0.2f);
-            } else if (ColorUtil.isColorLight(ThemeStore.primaryColorDark(this))) {
-                mImmersionBar.statusBarDarkFont(true, 0.2f);
-            } else {
-                mImmersionBar.statusBarDarkFont(false);
-            }
-            if (!preferences.getBoolean("navigationBarColorChange", false)) {
-                mImmersionBar.navigationBarColor(R.color.black);
-                mImmersionBar.navigationBarDarkFont(false);
-            } else if (ImmersionBar.canNavigationBarDarkFont()) {
-                mImmersionBar.navigationBarColorInt(ThemeStore.primaryColorDark(this));
-                if (ColorUtil.isColorLight(ThemeStore.primaryColor(this))) {
-                    mImmersionBar.navigationBarDarkFont(true);
-                } else {
-                    mImmersionBar.navigationBarDarkFont(false);
-                }
-            }
+            mImmersionBar.statusBarDarkFont(true);
+            mImmersionBar.navigationBarColor(R.color.white);
+            mImmersionBar.navigationBarDarkFont(true);
             mImmersionBar.init();
         } catch (Exception ignored) {
         }
-    }
-
-    /**
-     * @return 是否沉浸
-     */
-    protected boolean isImmersionBarEnabled() {
-        return preferences.getBoolean("immersionStatusBar", false);
     }
 
     /**
@@ -197,22 +162,6 @@ public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                 break;
         }
-    }
-
-    /**
-     * @return 是否夜间模式
-     */
-    public boolean isNightTheme() {
-        return MApplication.getInstance().isNightTheme();
-    }
-
-    protected void setNightTheme(boolean isNightTheme) {
-        preferences.edit()
-                .putBoolean("nightTheme", isNightTheme)
-                .apply();
-        MApplication.getInstance().initNightTheme();
-        MApplication.getInstance().upThemeStore();
-        RxBus.get().post(RxBusTag.RECREATE, true);
     }
 
     protected void initTheme() {
@@ -246,25 +195,19 @@ public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T
     @Override
     public void startActivity(Intent intent) {
         super.startActivity(intent);
-        if (MApplication.isEInkMode) {
-            overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
-        }
+        overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
     }
 
     @Override
     public void startActivityForResult(Intent intent, int requestCode, @Nullable Bundle options) {
         super.startActivityForResult(intent, requestCode, options);
-        if (MApplication.isEInkMode) {
-            overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
-        }
+        overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
     }
 
     @Override
     public void finish() {
         SoftInputUtil.hideIMM(getCurrentFocus());
         super.finish();
-        if (MApplication.isEInkMode) {
-            overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
-        }
+        overridePendingTransition(R.anim.anim_none, R.anim.anim_none);
     }
 }

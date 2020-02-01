@@ -179,7 +179,6 @@ class BytesEncodingDetect extends Encoding {
                     rawtext.length - byteoffset)) > 0) {
                 byteoffset += bytesread;
             }
-            ;
             chinesestream.close();
             guess = detectEncoding(rawtext);
         } catch (Exception e) {

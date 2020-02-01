@@ -24,10 +24,7 @@ public final class StorageUtils {
      */
     public static boolean externalMounted() {
         String state = Environment.getExternalStorageState();
-        if (state.equals(Environment.MEDIA_MOUNTED)) {
-            return true;
-        }
-        return false;
+        return state.equals(Environment.MEDIA_MOUNTED);
     }
 
     /**

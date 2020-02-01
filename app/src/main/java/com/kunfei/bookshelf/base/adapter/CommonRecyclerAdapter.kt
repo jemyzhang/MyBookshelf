@@ -38,8 +38,6 @@ abstract class CommonRecyclerAdapter<ITEM>(protected val context: Context) : Rec
     private var itemClickListener: ((holder: ItemViewHolder, item: ITEM) -> Unit)? = null
     private var itemLongClickListener: ((holder: ItemViewHolder, item: ITEM) -> Boolean)? = null
 
-    private var itemAnimation: ItemAnimation? = null
-
     fun setOnItemClickListener(listener: (holder: ItemViewHolder, item: ITEM) -> Unit) {
         itemClickListener = listener
     }
@@ -351,13 +349,6 @@ abstract class CommonRecyclerAdapter<ITEM>(protected val context: Context) : Rec
         }
     }
 
-    override fun onViewAttachedToWindow(holder: ItemViewHolder) {
-        super.onViewAttachedToWindow(holder)
-        if (!isHeader(holder.layoutPosition) && !isFooter(holder.layoutPosition)) {
-            addAnimation(holder)
-        }
-    }
-
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         val manager = recyclerView.layoutManager
@@ -374,10 +365,6 @@ abstract class CommonRecyclerAdapter<ITEM>(protected val context: Context) : Rec
         }
     }
 
-    fun setItemAnimation(item: ItemAnimation) {
-        itemAnimation = item
-    }
-
     private fun isHeader(position: Int): Boolean {
         return position < getHeaderCount()
     }
@@ -388,29 +375,6 @@ abstract class CommonRecyclerAdapter<ITEM>(protected val context: Context) : Rec
 
     private fun getActualPosition(position: Int): Int {
         return position - getHeaderCount()
-    }
-
-    private fun addAnimation(holder: ItemViewHolder) {
-        if (itemAnimation == null) {
-            itemAnimation = ItemAnimation.create().enabled(true)
-        }
-
-        itemAnimation?.let {
-            if (it.itemAnimEnabled) {
-                if (!it.itemAnimFirstOnly || holder.layoutPosition > it.itemAnimStartPosition) {
-                    startAnimation(holder, it)
-                    it.itemAnimStartPosition = holder.layoutPosition
-                }
-            }
-        }
-    }
-
-
-    protected open fun startAnimation(holder: ItemViewHolder, item: ItemAnimation) {
-        for (anim in item.itemAnimation.getAnimators(holder.itemView)) {
-            anim.setDuration(item.itemAnimDuration).start()
-            anim.interpolator = item.itemAnimInterpolator
-        }
     }
 
     companion object {

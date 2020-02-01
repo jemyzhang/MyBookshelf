@@ -84,7 +84,7 @@ public final class FileUtils {
      * 列出指定目录下的所有子目录
      */
     public static File[] listDirs(String startDirPath, String[] excludeDirs, @SortType int sortType) {
-        ArrayList<File> dirList = new ArrayList<File>();
+        ArrayList<File> dirList = new ArrayList<>();
         File startDir = new File(startDirPath);
         if (!startDir.isDirectory()) {
             return new File[0];
@@ -182,7 +182,7 @@ public final class FileUtils {
      * 列出指定目录下的所有文件
      */
     public static File[] listFiles(String startDirPath, final Pattern filterPattern, @SortType int sortType) {
-        ArrayList<File> fileList = new ArrayList<File>();
+        ArrayList<File> fileList = new ArrayList<>();
         File f = new File(startDirPath);
         if (!f.isDirectory()) {
             return new File[0];
@@ -549,7 +549,7 @@ public final class FileUtils {
         if (0 <= pos) {
             return pathOrUrl.substring(pos + 1);
         } else {
-            return String.valueOf(System.currentTimeMillis()) + "." + getExtension(pathOrUrl);
+            return System.currentTimeMillis() + "." + getExtension(pathOrUrl);
         }
     }
 
@@ -634,13 +634,7 @@ public final class FileUtils {
     public static int compareLastModified(String path1, String path2) {
         long stamp1 = (new File(path1)).lastModified();
         long stamp2 = (new File(path2)).lastModified();
-        if (stamp1 > stamp2) {
-            return 1;
-        } else if (stamp1 < stamp2) {
-            return -1;
-        } else {
-            return 0;
-        }
+        return Long.compare(stamp1, stamp2);
     }
 
     /**

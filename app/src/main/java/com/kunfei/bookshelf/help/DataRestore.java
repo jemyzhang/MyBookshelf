@@ -146,13 +146,10 @@ public class DataRestore {
                         break;
                 }
             }
-            editor.putLong("DonateHb", donateHb);
             editor.putInt("versionCode", MApplication.getVersionCode());
             editor.apply();
-            LauncherIcon.ChangeIcon(MApplication.getConfigPreferences().getString("launcher_icon", MApplication.getInstance().getString(R.string.icon_main)));
             ReadBookControl.getInstance().updateReaderSettings();
             MApplication.getInstance().upThemeStore();
-            MApplication.getInstance().initNightTheme();
         } catch (Exception e) {
             e.printStackTrace();
         }

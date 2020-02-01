@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -501,7 +502,7 @@ public class ConvertUtils {
 
     public static String toGbk(String str) {
         try {
-            return new String(str.getBytes("utf-8"), "gbk");
+            return new String(str.getBytes(StandardCharsets.UTF_8), "gbk");
         } catch (UnsupportedEncodingException e) {
             return str;
         }

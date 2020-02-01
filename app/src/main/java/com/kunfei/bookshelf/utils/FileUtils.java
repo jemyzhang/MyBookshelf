@@ -86,7 +86,7 @@ public final class FileUtils {
 
 
     public static ArrayList<String> getExtSdCardPaths(Context con) {
-        ArrayList<String> paths = new ArrayList<String>();
+        ArrayList<String> paths = new ArrayList<>();
         File[] files = ContextCompat.getExternalFilesDirs(con, "external");
         File firstFile = files[0];
         for (File file : files) {
@@ -250,14 +250,14 @@ public final class FileUtils {
             targetDir.mkdirs();
         }
         //遍历要复制该目录下的全部文件
-        for (int i = 0; i < currentFiles.length; i++) {
-            if (currentFiles[i].isDirectory())//如果当前项为子目录 进行递归
+        for (File currentFile : currentFiles) {
+            if (currentFile.isDirectory())//如果当前项为子目录 进行递归
             {
-                copy(currentFiles[i].getPath() + "/", toFile + currentFiles[i].getName() + "/");
+                copy(currentFile.getPath() + "/", toFile + currentFile.getName() + "/");
 
             } else//如果当前项为文件则进行文件拷贝
             {
-                CopySdcardFile(currentFiles[i].getPath(), toFile + currentFiles[i].getName());
+                CopySdcardFile(currentFile.getPath(), toFile + currentFile.getName());
             }
         }
         return 0;
@@ -270,7 +270,7 @@ public final class FileUtils {
         try {
             InputStream fosfrom = new FileInputStream(fromFile);
             OutputStream fosto = new FileOutputStream(toFile);
-            byte bt[] = new byte[1024];
+            byte[] bt = new byte[1024];
             int c;
             while ((c = fosfrom.read(bt)) > 0) {
                 fosto.write(bt, 0, c);

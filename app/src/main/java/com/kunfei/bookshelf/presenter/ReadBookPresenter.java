@@ -38,7 +38,6 @@ import com.kunfei.bookshelf.model.ImportBookModel;
 import com.kunfei.bookshelf.model.SavedSource;
 import com.kunfei.bookshelf.presenter.contract.ReadBookContract;
 import com.kunfei.bookshelf.service.DownloadService;
-import com.kunfei.bookshelf.service.ReadAloudService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -429,26 +428,9 @@ public class ReadBookPresenter extends BasePresenterImpl<ReadBookContract.View> 
 
     /////////////////////RxBus////////////////////////
 
-    @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.MEDIA_BUTTON)})
-    public void onMediaButton(String command) {
-        if (bookShelf != null) {
-            mView.onMediaButton(command);
-        }
-    }
-
     @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.UPDATE_READ)})
     public void updateRead(Boolean recreate) {
         mView.refresh(recreate);
-    }
-
-    @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.ALOUD_STATE)})
-    public void upAloudState(ReadAloudService.Status state) {
-        mView.upAloudState(state);
-    }
-
-    @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.ALOUD_TIMER)})
-    public void upAloudTimer(String timer) {
-        mView.upAloudTimer(timer);
     }
 
     @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.SKIP_TO_CHAPTER)})
@@ -461,32 +443,9 @@ public class ReadBookPresenter extends BasePresenterImpl<ReadBookContract.View> 
         mView.showBookmark(bookmarkBean);
     }
 
-    @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.READ_ALOUD_START)})
-    public void readAloudStart(Integer start) {
-        mView.readAloudStart(start);
-    }
-
-    @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.READ_ALOUD_NUMBER)})
-    public void readAloudLength(Integer start) {
-        mView.readAloudLength(start);
-    }
-
     @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.RECREATE)})
     public void recreate(Boolean recreate) {
         mView.recreate();
-    }
-
-    @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.AUDIO_SIZE)})
-    public void upAudioSize(Integer audioSize) {
-        mView.upAudioSize(audioSize);
-        BookChapterBean bean = chapterBeanList.get(bookShelf.getDurChapter());
-        bean.setEnd(Long.valueOf(audioSize));
-        DbHelper.getDaoSession().getBookChapterBeanDao().insertOrReplace(bean);
-    }
-
-    @Subscribe(thread = EventThread.MAIN_THREAD, tags = {@Tag(RxBusTag.AUDIO_DUR)})
-    public void upAudioDur(Integer audioDur) {
-        mView.upAudioDur(audioDur);
     }
 
     public interface OnAddListener {

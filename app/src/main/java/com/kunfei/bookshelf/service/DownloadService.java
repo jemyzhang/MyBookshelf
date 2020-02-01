@@ -50,7 +50,6 @@ public class DownloadService extends Service {
 
     private ExecutorService executor;
     private Scheduler scheduler;
-    private int threadsNum;
     private Handler handler = new Handler(Looper.getMainLooper());
 
     private SparseArray<IDownloadTask> downloadTasks = new SparseArray<>();
@@ -70,9 +69,7 @@ public class DownloadService extends Service {
         Notification notification = builder.build();
         startForeground(notificationId, notification);
 
-        SharedPreferences preferences = getSharedPreferences("CONFIG", 0);
-        threadsNum = preferences.getInt(this.getString(R.string.pk_threads_num), 4);
-        executor = Executors.newFixedThreadPool(threadsNum);
+        executor = Executors.newFixedThreadPool(1);
         scheduler = Schedulers.from(executor);
     }
 
@@ -237,7 +234,7 @@ public class DownloadService extends Service {
                 downloading += 1;
             }
         }
-        return downloading < threadsNum;
+        return downloading < 1;
     }
 
 

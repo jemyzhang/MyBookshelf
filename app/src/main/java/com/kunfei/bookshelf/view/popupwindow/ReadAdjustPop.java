@@ -28,22 +28,11 @@ public class ReadAdjustPop extends FrameLayout {
     SmoothCheckBox scbFollowSys;
     @BindView(R.id.ll_follow_sys)
     LinearLayout llFollowSys;
-    @BindView(R.id.ll_click)
-    LinearLayout llClick;
-    @BindView(R.id.hpb_click)
-    SeekBar hpbClick;
-    @BindView(R.id.ll_tts_SpeechRate)
-    LinearLayout llTtsSpeechRate;
-    @BindView(R.id.hpb_tts_SpeechRate)
-    SeekBar hpbTtsSpeechRate;
-    @BindView(R.id.scb_tts_follow_sys)
-    SmoothCheckBox scbTtsFollowSys;
-    @BindView(R.id.tv_auto_page)
-    TextView tvAutoPage;
+    @BindView(R.id.vwNavigationBar_pra)
+    View vwNavigationBar;
 
     private Activity context;
     private ReadBookControl readBookControl = ReadBookControl.getInstance();
-    private Callback callback;
 
     public ReadAdjustPop(Context context) {
         super(context);
@@ -64,11 +53,15 @@ public class ReadAdjustPop extends FrameLayout {
         View view = LayoutInflater.from(context).inflate(R.layout.pop_read_adjust, this);
         ButterKnife.bind(this, view);
         vwBg.setOnClickListener(null);
+        vwNavigationBar.setOnClickListener(null);
     }
 
-    public void setListener(Activity activity, Callback callback) {
+    public void setNavigationBarHeight(int height) {
+        vwNavigationBar.getLayoutParams().height = height;
+    }
+
+    public void setListener(Activity activity) {
         this.context = activity;
-        this.callback = callback;
         initData();
         bindEvent();
         initLight();
@@ -79,17 +72,6 @@ public class ReadAdjustPop extends FrameLayout {
     }
 
     private void initData() {
-        scbTtsFollowSys.setChecked(readBookControl.isSpeechRateFollowSys());
-        if (readBookControl.isSpeechRateFollowSys()) {
-            hpbTtsSpeechRate.setEnabled(false);
-        } else {
-            hpbTtsSpeechRate.setEnabled(true);
-        }
-        //CPM范围设置 每分钟阅读200字到2000字 默认500字/分钟
-        hpbClick.setMax(readBookControl.maxCPM - readBookControl.minCPM);
-        hpbClick.setProgress(readBookControl.getCPM());
-        tvAutoPage.setText(String.format("%sCPM", readBookControl.getCPM()));
-        hpbTtsSpeechRate.setProgress(readBookControl.getSpeechRate() - 5);
     }
 
     private void bindEvent() {
@@ -133,69 +115,6 @@ public class ReadAdjustPop extends FrameLayout {
             }
         });
 
-        //自动翻页阅读速度(CPM)
-        hpbClick.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                tvAutoPage.setText(String.format("%sCPM", i + readBookControl.minCPM));
-                readBookControl.setCPM(i + readBookControl.minCPM);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        //朗读语速调节
-        llTtsSpeechRate.setOnClickListener(v -> {
-            if (scbTtsFollowSys.isChecked()) {
-                scbTtsFollowSys.setChecked(false, true);
-            } else {
-                scbTtsFollowSys.setChecked(true, true);
-            }
-        });
-        scbTtsFollowSys.setOnCheckedChangeListener((checkBox, isChecked) -> {
-            if (isChecked) {
-                //跟随系统
-                hpbTtsSpeechRate.setEnabled(false);
-                readBookControl.setSpeechRateFollowSys(true);
-                if (callback != null) {
-                    callback.speechRateFollowSys();
-                }
-            } else {
-                //不跟随系统
-                hpbTtsSpeechRate.setEnabled(true);
-                readBookControl.setSpeechRateFollowSys(false);
-                if (callback != null) {
-                    callback.changeSpeechRate(readBookControl.getSpeechRate());
-                }
-            }
-        });
-        hpbTtsSpeechRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                readBookControl.setSpeechRate(seekBar.getProgress() + 5);
-                if (callback != null) {
-                    callback.changeSpeechRate(readBookControl.getSpeechRate());
-                }
-            }
-        });
     }
 
     public void setScreenBrightness() {
@@ -219,9 +138,4 @@ public class ReadAdjustPop extends FrameLayout {
         }
     }
 
-    public interface Callback {
-        void changeSpeechRate(int speechRate);
-
-        void speechRateFollowSys();
-    }
 }

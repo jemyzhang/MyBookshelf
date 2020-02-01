@@ -9,9 +9,7 @@ import android.view.View
 import android.widget.CompoundButton
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
-import com.hwangjr.rxbus.RxBus
 import com.kunfei.bookshelf.R
-import com.kunfei.bookshelf.constant.RxBusTag
 import com.kunfei.bookshelf.help.ReadBookControl
 import com.kunfei.bookshelf.utils.theme.ATH
 import com.kunfei.bookshelf.widget.modialog.PageKeyDialog
@@ -38,6 +36,11 @@ class MoreSettingPop : FrameLayout {
     private fun init(context: Context) {
         LayoutInflater.from(context).inflate(R.layout.pop_more_setting, this)
         vw_bg.setOnClickListener(null)
+        vwNavigationBar_pms.setOnClickListener(null)
+    }
+
+    fun setNavigationBarHeight(height: Int) {
+        vwNavigationBar_pms.getLayoutParams().height = height
     }
 
     fun setListener(callback: Callback) {
@@ -48,41 +51,10 @@ class MoreSettingPop : FrameLayout {
 
     private fun bindEvent() {
         setOnClickListener { this.visibility = View.GONE }
-        sbImmersionStatusBar.setOnCheckedChangeListener { compoundButton: CompoundButton, b: Boolean ->
-            if (compoundButton.isPressed) {
-                readBookControl.immersionStatusBar = b
-                callback?.upBar()
-                RxBus.get().post(RxBusTag.RECREATE, true)
-            }
-        }
-        sb_hideStatusBar.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
-            if (buttonView.isPressed) {
-                readBookControl.hideStatusBar = isChecked
-                callback?.recreate()
-            }
-        }
-        sb_to_lh.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
-            if (buttonView.isPressed) {
-                readBookControl.toLh = isChecked
-                callback?.recreate()
-            }
-        }
-        sb_hideNavigationBar.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
-            if (buttonView.isPressed) {
-                readBookControl.hideNavigationBar = isChecked
-                initData()
-                callback?.recreate()
-            }
-        }
         sw_volume_next_page.setOnCheckedChangeListener { compoundButton: CompoundButton, b: Boolean ->
             if (compoundButton.isPressed) {
                 readBookControl.canKeyTurn = b
                 upView()
-            }
-        }
-        sw_read_aloud_key.setOnCheckedChangeListener { compoundButton: CompoundButton, b: Boolean ->
-            if (compoundButton.isPressed) {
-                readBookControl.aloudCanKeyTurn = b
             }
         }
         sb_click.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
@@ -99,12 +71,6 @@ class MoreSettingPop : FrameLayout {
         sb_show_title.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
             if (buttonView.isPressed) {
                 readBookControl.showTitle = isChecked
-                callback?.refreshPage()
-            }
-        }
-        sb_showTimeBattery.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
-            if (buttonView.isPressed) {
-                readBookControl.showTimeBattery = isChecked
                 callback?.refreshPage()
             }
         }
@@ -156,19 +122,6 @@ class MoreSettingPop : FrameLayout {
             dialog.show()
             ATH.setAlertDialogTint(dialog)
         }
-        llNavigationBarColor!!.setOnClickListener {
-            val dialog = AlertDialog.Builder(context)
-                    .setTitle(context.getString(R.string.re_navigation_bar_color))
-                    .setSingleChoiceItems(context.resources.getStringArray(R.array.NavBarColors), readBookControl.navBarColor) { dialogInterface: DialogInterface, i: Int ->
-                        readBookControl.navBarColor = i
-                        upNavBarColor(i)
-                        dialogInterface.dismiss()
-                        callback?.recreate()
-                    }
-                    .create()
-            dialog.show()
-            ATH.setAlertDialogTint(dialog)
-        }
         sb_select_text.setOnCheckedChangeListener { buttonView: CompoundButton, isChecked: Boolean ->
             if (buttonView.isPressed) {
                 readBookControl.isCanSelectText = isChecked
@@ -183,39 +136,17 @@ class MoreSettingPop : FrameLayout {
         upScreenDirection(readBookControl.screenDirection)
         upScreenTimeOut(readBookControl.screenTimeOut)
         upFConvert(readBookControl.textConvert)
-        upNavBarColor(readBookControl.navBarColor)
-        sbImmersionStatusBar!!.isChecked = readBookControl.immersionStatusBar
         sw_volume_next_page.isChecked = readBookControl.canKeyTurn
-        sw_read_aloud_key.isChecked = readBookControl.aloudCanKeyTurn
-        sb_hideStatusBar.isChecked = readBookControl.hideStatusBar
-        sb_to_lh.isChecked = readBookControl.toLh
-        sb_hideNavigationBar.isChecked = readBookControl.hideNavigationBar
         sb_click.isChecked = readBookControl.canClickTurn
         sb_click_all_next.isChecked = readBookControl.clickAllNext
         sb_show_title.isChecked = readBookControl.showTitle
-        sb_showTimeBattery.isChecked = readBookControl.showTimeBattery
         sb_showLine.isChecked = readBookControl.showLine
         sb_select_text.isChecked = readBookControl.isCanSelectText
         upView()
     }
 
     private fun upView() {
-        if (readBookControl.hideStatusBar) {
-            sb_showTimeBattery.isEnabled = true
-            sb_to_lh.isEnabled = true
-        } else {
-            sb_showTimeBattery.isEnabled = false
-            sb_to_lh.isEnabled = false
-        }
-        sw_read_aloud_key.isEnabled = readBookControl.canKeyTurn
         sb_click_all_next.isEnabled = readBookControl.canClickTurn
-        if (readBookControl.hideNavigationBar) {
-            llNavigationBarColor.isEnabled = false
-            reNavBarColor_val.isEnabled = false
-        } else {
-            llNavigationBarColor!!.isEnabled = true
-            reNavBarColor_val.isEnabled = true
-        }
     }
 
     private fun upScreenTimeOut(screenTimeOut: Int) {
@@ -233,10 +164,6 @@ class MoreSettingPop : FrameLayout {
         } else {
             tv_screen_direction.text = screenDirectionListTitle[screenDirection]
         }
-    }
-
-    private fun upNavBarColor(nColor: Int) {
-        reNavBarColor_val.text = context.resources.getStringArray(R.array.NavBarColors)[nColor]
     }
 
     interface Callback {

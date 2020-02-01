@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.KeyEvent;
@@ -48,7 +47,6 @@ import com.kunfei.bookshelf.help.permission.PermissionsCompat;
 import com.kunfei.bookshelf.model.UpLastChapterModel;
 import com.kunfei.bookshelf.presenter.MainPresenter;
 import com.kunfei.bookshelf.presenter.contract.MainContract;
-import com.kunfei.bookshelf.service.WebService;
 import com.kunfei.bookshelf.utils.ACache;
 import com.kunfei.bookshelf.utils.StringUtils;
 import com.kunfei.bookshelf.utils.theme.ATH;
@@ -84,9 +82,7 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
     @BindView(R.id.card_search)
     CardView cardSearch;
 
-    private AppCompatImageView vwNightTheme;
     private int group;
-    private boolean viewIsList;
     private ActionBarDrawerToggle mDrawerToggle;
     private MoDialogHUD moDialogHUD;
     private long exitTime = 0;
@@ -159,7 +155,6 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
 
     @Override
     protected void initData() {
-        viewIsList = preferences.getBoolean("bookshelfIsList", true);
         mTitles = new String[]{getString(R.string.bookshelf), getString(R.string.find)};
     }
 
@@ -217,7 +212,7 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         }
         //点击跳转搜索页
         cardSearch.setOnClickListener(view -> startActivityByAnim(new Intent(this, SearchBookActivity.class),
-                toolbar, "sharedView", android.R.anim.fade_in, android.R.anim.fade_out));
+                toolbar, "sharedView", 0, 0));
     }
 
     //初始化TabLayout和ViewPager
@@ -396,9 +391,6 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         super.onPostCreate(savedInstanceState);
         // 这个必须要，没有的话进去的默认是个箭头。。正常应该是三横杠的
         mDrawerToggle.syncState();
-        if (vwNightTheme != null) {
-            upThemeVw();
-        }
     }
 
     @Override
@@ -460,14 +452,11 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
                     getBookListFragment().setArrange(true);
                 }
                 break;
-            case R.id.action_web_start:
-                WebService.startThis(this);
-                break;
             case android.R.id.home:
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
                     drawer.closeDrawers();
                 } else {
-                    drawer.openDrawer(GravityCompat.START, !MApplication.isEInkMode);
+                    drawer.openDrawer(GravityCompat.START, false);
                 }
                 break;
         }
@@ -486,6 +475,7 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
     private void initDrawer() {
         mDrawerToggle = new ActionBarDrawerToggle(this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         mDrawerToggle.syncState();
+        mDrawerToggle.setDrawerSlideAnimationEnabled(false);
         drawer.addDrawerListener(mDrawerToggle);
 
         setUpNavigationView();
@@ -523,12 +513,8 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         AppCompatImageView imageView = headerView.findViewById(R.id.iv_read);
         imageView.setColorFilter(ThemeStore.accentColor(this));
         navigationView.addHeaderView(headerView);
-        Menu drawerMenu = navigationView.getMenu();
-        vwNightTheme = drawerMenu.findItem(R.id.action_theme).getActionView().findViewById(R.id.iv_theme_day_night);
-        upThemeVw();
-        vwNightTheme.setOnClickListener(view -> setNightTheme(!isNightTheme()));
         navigationView.setNavigationItemSelectedListener(menuItem -> {
-            drawer.closeDrawer(GravityCompat.START, !MApplication.isEInkMode);
+            drawer.closeDrawer(GravityCompat.START, false);
             switch (menuItem.getItemId()) {
                 case R.id.action_book_source_manage:
                     handler.postDelayed(() -> BookSourceActivity.startThis(this, requestSource), 200);
@@ -545,9 +531,6 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
                 case R.id.action_about:
                     handler.postDelayed(() -> AboutActivity.startThis(this), 200);
                     break;
-                case R.id.action_donate:
-                    handler.postDelayed(() -> DonateActivity.startThis(this), 200);
-                    break;
                 case R.id.action_backup:
                     handler.postDelayed(this::backup, 200);
                     break;
@@ -560,20 +543,6 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
             }
             return true;
         });
-    }
-
-    /**
-     * 更新主题切换按钮
-     */
-    private void upThemeVw() {
-        if (isNightTheme()) {
-            vwNightTheme.setImageResource(R.drawable.ic_daytime);
-            vwNightTheme.setContentDescription(getString(R.string.click_to_day));
-        } else {
-            vwNightTheme.setImageResource(R.drawable.ic_brightness);
-            vwNightTheme.setContentDescription(getString(R.string.click_to_night));
-        }
-        vwNightTheme.getDrawable().mutate().setColorFilter(ThemeStore.accentColor(this), PorterDuff.Mode.SRC_ATOP);
     }
 
     private void selectBookshelfLayout() {
@@ -677,7 +646,7 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         } else {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
-                    drawer.closeDrawer(GravityCompat.START, !MApplication.isEInkMode);
+                    drawer.closeDrawer(GravityCompat.START, false);
                     return true;
                 }
                 exit();

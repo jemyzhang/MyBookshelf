@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -63,7 +64,7 @@ public class DocumentHelper {
         byte[] data = DocumentUtil.readBytes(MApplication.getInstance(), fileName, rootPath, subDirs);
         String string = null;
         try {
-            string = new String(data, "utf-8");
+            string = new String(data, StandardCharsets.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -74,7 +75,7 @@ public class DocumentHelper {
         byte[] data = DocumentUtil.readBytes(MApplication.getInstance(), uri);
         String string = null;
         try {
-            string = new String(data, "utf-8");
+            string = new String(data, StandardCharsets.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -85,7 +86,7 @@ public class DocumentHelper {
         byte[] data = DocumentUtil.readBytes(MApplication.getInstance(), file);
         String string = null;
         try {
-            string = new String(data, "utf-8");
+            string = new String(data, StandardCharsets.UTF_8);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -162,8 +163,6 @@ public class DocumentHelper {
             fis.close();
             bos.close();
             buffer = bos.toByteArray();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

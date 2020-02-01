@@ -25,10 +25,10 @@ public abstract class BaseExpandAbleViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
         switch (viewType) {
             case VIEW_TYPE_PARENT:
-                groupView = (ViewGroup) itemView.findViewById(getGroupViewResId());
+                groupView = itemView.findViewById(getGroupViewResId());
                 break;
             case VIEW_TYPE_CHILD:
-                childView = (ViewGroup) itemView.findViewById(getChildViewResId());
+                childView = itemView.findViewById(getChildViewResId());
                 break;
         }
     }

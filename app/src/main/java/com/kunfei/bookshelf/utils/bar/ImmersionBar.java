@@ -138,7 +138,7 @@ public class ImmersionBar {
      */
     private void initParams() {
         mDecorView = (ViewGroup) mWindow.getDecorView();
-        mContentView = (ViewGroup) mDecorView.findViewById(android.R.id.content);
+        mContentView = mDecorView.findViewById(android.R.id.content);
         mConfig = new BarConfig(mActivity);
         if (mMap.get(mImmersionBarName) == null) {
             mBarParams = new BarParams();
@@ -983,7 +983,7 @@ public class ImmersionBar {
      * @return the immersion bar
      */
     public ImmersionBar navigationBarDarkFont(boolean isDarkFont) {
-        return navigationBarDarkFont(isDarkFont, 0.3f);
+        return navigationBarDarkFont(isDarkFont, 0.0f);
     }
 
     /**
@@ -2035,7 +2035,7 @@ public class ImmersionBar {
      * @param activity the activity
      */
     public static void setFitsSystemWindows(Activity activity) {
-        ViewGroup parent = (ViewGroup) activity.findViewById(android.R.id.content);
+        ViewGroup parent = activity.findViewById(android.R.id.content);
         for (int i = 0, count = parent.getChildCount(); i < count; i++) {
             View childView = parent.getChildAt(i);
             if (childView instanceof ViewGroup) {

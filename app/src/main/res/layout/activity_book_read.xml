@@ -55,13 +55,6 @@
         android:layout_gravity="center"
         android:visibility="invisible" />
 
-    <com.kunfei.bookshelf.view.popupwindow.MediaPlayerPop
-        android:id="@+id/mediaPlayerPop"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-
     <FrameLayout
         android:id="@+id/fl_menu"
         android:layout_width="match_parent"

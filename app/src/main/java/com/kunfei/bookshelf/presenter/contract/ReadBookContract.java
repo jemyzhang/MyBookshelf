@@ -11,7 +11,6 @@ import com.kunfei.bookshelf.bean.BookSourceBean;
 import com.kunfei.bookshelf.bean.BookmarkBean;
 import com.kunfei.bookshelf.bean.SearchBookBean;
 import com.kunfei.bookshelf.presenter.ReadBookPresenter;
-import com.kunfei.bookshelf.service.ReadAloudService;
 
 import java.util.List;
 
@@ -36,25 +35,12 @@ public interface ReadBookContract {
 
         void skipToChapter(int chapterIndex, int pageIndex);
 
-        void onMediaButton(String cmd);
-
-        void upAloudState(ReadAloudService.Status state);
-
-        void upAloudTimer(String timer);
-
-        void readAloudStart(int start);
-
-        void readAloudLength(int readAloudLength);
-
         void refresh(boolean recreate);
 
         void finish();
 
         void recreate();
 
-        void upAudioSize(int audioSize);
-
-        void upAudioDur(int audioDur);
     }
 
     interface Presenter extends IPresenter {

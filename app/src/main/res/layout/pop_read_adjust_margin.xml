@@ -609,4 +609,9 @@
         </LinearLayout>
 
     </FrameLayout>
+    <View
+        android:id="@+id/vwNavigationBar_pram"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/background_menu" />
 </LinearLayout>

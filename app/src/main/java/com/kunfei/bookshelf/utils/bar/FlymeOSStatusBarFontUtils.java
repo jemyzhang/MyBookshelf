@@ -39,9 +39,7 @@ public class FlymeOSStatusBarFontUtils {
         try {
             Field field = View.class.getField("SYSTEM_UI_FLAG_LIGHT_STATUS_BAR");
             SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = field.getInt(null);
-        } catch (NoSuchFieldException e) {
-
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
 
         }
     }
@@ -82,9 +80,7 @@ public class FlymeOSStatusBarFontUtils {
         if (mSetStatusBarColorIcon != null) {
             try {
                 mSetStatusBarColorIcon.invoke(activity, color);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         } else {
@@ -143,12 +139,6 @@ public class FlymeOSStatusBarFontUtils {
                 f2.setInt(winParams, meizuFlags);
                 return true;
             }
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -217,9 +207,7 @@ public class FlymeOSStatusBarFontUtils {
         if (mSetStatusBarDarkIcon != null) {
             try {
                 mSetStatusBarDarkIcon.invoke(activity, dark);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         } else {

@@ -185,7 +185,7 @@ public class ExplosionField extends View {
     }
 
     public static ExplosionField attach2Window(Activity activity) {
-        ViewGroup rootView = (ViewGroup) activity.findViewById(Window.ID_ANDROID_CONTENT);
+        ViewGroup rootView = activity.findViewById(Window.ID_ANDROID_CONTENT);
         ExplosionField explosionField = new ExplosionField(activity);
         rootView.addView(explosionField, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

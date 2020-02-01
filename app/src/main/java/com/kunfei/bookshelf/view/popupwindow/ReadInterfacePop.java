@@ -2,8 +2,6 @@
 package com.kunfei.bookshelf.view.popupwindow;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,13 +18,11 @@ import com.kunfei.bookshelf.help.permission.Permissions;
 import com.kunfei.bookshelf.help.permission.PermissionsCompat;
 import com.kunfei.bookshelf.utils.theme.ATH;
 import com.kunfei.bookshelf.view.activity.ReadBookActivity;
-import com.kunfei.bookshelf.view.activity.ReadStyleActivity;
 import com.kunfei.bookshelf.widget.font.FontSelector;
 import com.kunfei.bookshelf.widget.page.animation.PageAnimation;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import de.hdodenhof.circleimageview.CircleImageView;
 import kotlin.Unit;
 
 public class ReadInterfacePop extends FrameLayout {
@@ -36,26 +32,6 @@ public class ReadInterfacePop extends FrameLayout {
     TextView flTextBold;
     @BindView(R.id.fl_text_font)
     TextView fl_text_font;
-    @BindView(R.id.civ_bg_white)
-    CircleImageView civBgWhite;
-    @BindView(R.id.civ_bg_yellow)
-    CircleImageView civBgYellow;
-    @BindView(R.id.civ_bg_green)
-    CircleImageView civBgGreen;
-    @BindView(R.id.civ_bg_black)
-    CircleImageView civBgBlack;
-    @BindView(R.id.civ_bg_blue)
-    CircleImageView civBgBlue;
-    @BindView(R.id.tv0)
-    TextView tv0;
-    @BindView(R.id.tv1)
-    TextView tv1;
-    @BindView(R.id.tv2)
-    TextView tv2;
-    @BindView(R.id.tv3)
-    TextView tv3;
-    @BindView(R.id.tv4)
-    TextView tv4;
 
     @BindView(R.id.nbTextSize)
     TextView nbTextSize;
@@ -77,6 +53,8 @@ public class ReadInterfacePop extends FrameLayout {
     TextView tvRowDef;
     @BindView(R.id.tvOther)
     ImageView tvOther;
+    @BindView(R.id.vwNavigationBar_pri)
+    View vwNavigationBar;
 
     private ReadBookActivity activity;
     private ReadBookControl readBookControl = ReadBookControl.getInstance();
@@ -101,6 +79,11 @@ public class ReadInterfacePop extends FrameLayout {
         View view = LayoutInflater.from(context).inflate(R.layout.pop_read_interface, this);
         ButterKnife.bind(this, view);
         vwBg.setOnClickListener(null);
+        vwNavigationBar.setOnClickListener(null);
+    }
+
+    public void setNavigationBarHeight(int height) {
+        vwNavigationBar.getLayoutParams().height = height;
     }
 
     public void setListener(ReadBookActivity readBookActivity, @NonNull Callback callback) {
@@ -111,8 +94,6 @@ public class ReadInterfacePop extends FrameLayout {
     }
 
     private void initData() {
-        setBg();
-        updateBg(readBookControl.getTextDrawableIndex());
         updateBoldText(readBookControl.getTextBold());
         updatePageMode(readBookControl.getPageMode());
 
@@ -201,33 +182,6 @@ public class ReadInterfacePop extends FrameLayout {
         tvOther.setOnClickListener(v -> {
             activity.readAdjustMarginIn();
         });
-        //背景选择
-        civBgWhite.setOnClickListener(v -> {
-            updateBg(0);
-            callback.bgChange();
-        });
-        civBgYellow.setOnClickListener(v -> {
-            updateBg(1);
-            callback.bgChange();
-        });
-        civBgGreen.setOnClickListener(v -> {
-            updateBg(2);
-            callback.bgChange();
-        });
-        civBgBlue.setOnClickListener(v -> {
-            updateBg(3);
-            callback.bgChange();
-        });
-        civBgBlack.setOnClickListener(v -> {
-            updateBg(4);
-            callback.bgChange();
-        });
-        //自定义阅读样式
-        civBgWhite.setOnLongClickListener(view -> customReadStyle(0));
-        civBgYellow.setOnLongClickListener(view -> customReadStyle(1));
-        civBgGreen.setOnLongClickListener(view -> customReadStyle(2));
-        civBgBlue.setOnLongClickListener(view -> customReadStyle(3));
-        civBgBlack.setOnLongClickListener(view -> customReadStyle(4));
 
         //选择字体
         fl_text_font.setOnClickListener(view -> {
@@ -262,14 +216,6 @@ public class ReadInterfacePop extends FrameLayout {
         });
     }
 
-    //自定义阅读样式
-    private boolean customReadStyle(int index) {
-        Intent intent = new Intent(activity, ReadStyleActivity.class);
-        intent.putExtra("index", index);
-        activity.startActivity(intent);
-        return false;
-    }
-
     //设置字体
     public void setReadFonts(String path) {
         readBookControl.setReadBookFont(path);
@@ -288,45 +234,6 @@ public class ReadInterfacePop extends FrameLayout {
 
     private void updateBoldText(Boolean isBold) {
         flTextBold.setSelected(isBold);
-    }
-
-    public void setBg() {
-        tv0.setTextColor(readBookControl.getTextColor(0));
-        tv1.setTextColor(readBookControl.getTextColor(1));
-        tv2.setTextColor(readBookControl.getTextColor(2));
-        tv3.setTextColor(readBookControl.getTextColor(3));
-        tv4.setTextColor(readBookControl.getTextColor(4));
-        civBgWhite.setImageDrawable(readBookControl.getBgDrawable(0, activity, 100, 180));
-        civBgYellow.setImageDrawable(readBookControl.getBgDrawable(1, activity, 100, 180));
-        civBgGreen.setImageDrawable(readBookControl.getBgDrawable(2, activity, 100, 180));
-        civBgBlue.setImageDrawable(readBookControl.getBgDrawable(3, activity, 100, 180));
-        civBgBlack.setImageDrawable(readBookControl.getBgDrawable(4, activity, 100, 180));
-    }
-
-    private void updateBg(int index) {
-        civBgWhite.setBorderColor(activity.getResources().getColor(R.color.tv_text_default));
-        civBgYellow.setBorderColor(activity.getResources().getColor(R.color.tv_text_default));
-        civBgGreen.setBorderColor(activity.getResources().getColor(R.color.tv_text_default));
-        civBgBlack.setBorderColor(activity.getResources().getColor(R.color.tv_text_default));
-        civBgBlue.setBorderColor(activity.getResources().getColor(R.color.tv_text_default));
-        switch (index) {
-            case 0:
-                civBgWhite.setBorderColor(Color.parseColor("#F3B63F"));
-                break;
-            case 1:
-                civBgYellow.setBorderColor(Color.parseColor("#F3B63F"));
-                break;
-            case 2:
-                civBgGreen.setBorderColor(Color.parseColor("#F3B63F"));
-                break;
-            case 3:
-                civBgBlue.setBorderColor(Color.parseColor("#F3B63F"));
-                break;
-            case 4:
-                civBgBlack.setBorderColor(Color.parseColor("#F3B63F"));
-                break;
-        }
-        readBookControl.setTextDrawableIndex(index);
     }
 
     public interface Callback {

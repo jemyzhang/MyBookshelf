@@ -200,10 +200,6 @@ public abstract class PageAnimation {
      * 翻页模式
      */
     public enum Mode {
-        COVER(MApplication.getAppResources().getString(R.string.page_mode_COVER)),
-        SIMULATION(MApplication.getAppResources().getString(R.string.page_mode_SIMULATION)),
-        SLIDE(MApplication.getAppResources().getString(R.string.page_mode_SLIDE)),
-        SCROLL(MApplication.getAppResources().getString(R.string.page_mode_SCROLL)),
         NONE(MApplication.getAppResources().getString(R.string.page_mode_NONE));
 
         private String name;
@@ -213,24 +209,11 @@ public abstract class PageAnimation {
         }
 
         public static Mode getPageMode(int pageMode) {
-            switch (pageMode) {
-                case 0:
-                    return COVER;
-                case 1:
-                    return SIMULATION;
-                case 2:
-                    return SLIDE;
-                case 3:
-                    return SCROLL;
-                case 4:
-                    return NONE;
-                default:
-                    return COVER;
-            }
+            return NONE;
         }
 
         public static String[] getAllPageMode() {
-            return new String[]{COVER.name, SIMULATION.name, SLIDE.name, SCROLL.name, NONE.name};
+            return new String[]{NONE.name};
         }
 
         @NonNull

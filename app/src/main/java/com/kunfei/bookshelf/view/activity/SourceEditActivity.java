@@ -5,27 +5,20 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Editable;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewTreeObserver;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,43 +26,28 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.kunfei.basemvplib.BitIntentDataManager;
-import com.kunfei.bookshelf.BuildConfig;
 import com.kunfei.bookshelf.R;
 import com.kunfei.bookshelf.base.MBaseActivity;
 import com.kunfei.bookshelf.base.observer.MyObserver;
-import com.kunfei.bookshelf.base.observer.MySingleObserver;
 import com.kunfei.bookshelf.bean.BookSourceBean;
 import com.kunfei.bookshelf.constant.BookType;
 import com.kunfei.bookshelf.model.BookSourceManager;
 import com.kunfei.bookshelf.presenter.SourceEditPresenter;
 import com.kunfei.bookshelf.presenter.contract.SourceEditContract;
-import com.kunfei.bookshelf.service.ShareService;
-import com.kunfei.bookshelf.utils.RxUtils;
 import com.kunfei.bookshelf.utils.SoftInputUtil;
 import com.kunfei.bookshelf.utils.theme.ThemeStore;
 import com.kunfei.bookshelf.view.adapter.SourceEditAdapter;
-import com.kunfei.bookshelf.view.popupwindow.KeyboardToolPop;
 import com.kunfei.bookshelf.widget.views.ATECheckBox;
 
-import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import cn.bingoogolapple.qrcode.zxing.QRCodeEncoder;
 import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.SingleOnSubscribe;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -78,7 +56,7 @@ import static android.text.TextUtils.isEmpty;
  * 编辑书源
  */
 
-public class SourceEditActivity extends MBaseActivity<SourceEditContract.Presenter> implements SourceEditContract.View, KeyboardToolPop.CallBack {
+public class SourceEditActivity extends MBaseActivity<SourceEditContract.Presenter> implements SourceEditContract.View {
     public final static int EDIT_SOURCE = 1101;
     private final int REQUEST_QR = 202;
 
@@ -104,7 +82,6 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
     private int serialNumber;
     private boolean enable;
     private String title;
-    private PopupWindow mSoftKeyboardTool;
     private boolean mIsSoftKeyBoardShowing = false;
     private boolean showFind;
     private String[] keyHelp = {"@", "&", "|", "%", "/", ":", "[", "]", "{", "}", "<", ">", "\\", "$", "#", "!", ".",
@@ -183,7 +160,6 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
         ButterKnife.bind(this);
         this.setSupportActionBar(toolbar);
         setupActionBar();
-        mSoftKeyboardTool = new KeyboardToolPop(this, Arrays.asList(keyHelp), this);
         getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new KeyboardOnGlobalChangeListener());
         adapter = new SourceEditAdapter(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -286,11 +262,6 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
         }
         cbIsAudio.setChecked(Objects.equals(bookSourceBean.getBookSourceType(), BookType.AUDIO));
         cbIsEnable.setChecked(bookSourceBean.getEnable());
-    }
-
-    private void scanBookSource() {
-        Intent intent = new Intent(this, QRCodeScanActivity.class);
-        startActivityForResult(intent, REQUEST_QR);
     }
 
     private BookSourceBean getBookSource(boolean hasFind) {
@@ -425,44 +396,6 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
         return bookSourceBeanN;
     }
 
-    @SuppressLint("SetWorldReadable")
-    private void shareBookSource() {
-        Single.create((SingleOnSubscribe<Bitmap>) emitter -> {
-            QRCodeEncoder.HINTS.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-            Bitmap bitmap = QRCodeEncoder.syncEncodeQRCode(getBookSourceStr(true), 600);
-            QRCodeEncoder.HINTS.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-            emitter.onSuccess(bitmap);
-        }).compose(RxUtils::toSimpleSingle)
-                .subscribe(new MySingleObserver<Bitmap>() {
-
-                    @Override
-                    public void onSuccess(Bitmap bitmap) {
-                        if (bitmap == null) {
-                            toast("书源文字太多,生成二维码失败");
-                            return;
-                        }
-                        try {
-                            File file = new File(SourceEditActivity.this.getExternalCacheDir(), "bookSource.png");
-                            FileOutputStream fOut = new FileOutputStream(file);
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-                            fOut.flush();
-                            fOut.close();
-                            //noinspection ResultOfMethodCallIgnored
-                            file.setReadable(true, false);
-                            Uri contentUri = FileProvider.getUriForFile(SourceEditActivity.this, BuildConfig.APPLICATION_ID + ".fileProvider", file);
-                            final Intent intent = new Intent(Intent.ACTION_SEND);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            intent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                            intent.setType("image/png");
-                            startActivity(Intent.createChooser(intent, "分享书源"));
-                        } catch (Exception e) {
-                            toast(e.getLocalizedMessage());
-                        }
-                    }
-                });
-
-    }
-
     private void openRuleSummary() {
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -540,38 +473,11 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
             case R.id.action_paste_source:
                 mPresenter.pasteSource();
                 break;
-            case R.id.action_qr_code_camera:
-                scanBookSource();
-                break;
-            case R.id.action_share_it:
-                shareBookSource();
-                break;
             case R.id.action_share_str:
                 shareText("Source Share", getBookSourceStr(true));
                 break;
-            case R.id.action_share_wifi:
-                ShareService.startThis(this, Collections.singletonList(getBookSource(true)));
-                break;
             case R.id.action_rule_summary:
                 openRuleSummary();
-                break;
-            case R.id.action_debug_source:
-                if (canSaveBookSource()) {
-                    mPresenter.saveSource(getBookSource(true), bookSourceBean)
-                            .subscribe(new MyObserver<Boolean>() {
-                                @Override
-                                public void onNext(Boolean aBoolean) {
-                                    bookSourceBean = getBookSource(true);
-                                    setResult(RESULT_OK);
-                                    SourceDebugActivity.startThis(SourceEditActivity.this, getBookSource(true).getBookSourceUrl());
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-                                    toast(e.getLocalizedMessage());
-                                }
-                            });
-                }
                 break;
             case android.R.id.home:
                 SoftInputUtil.hideIMM(getCurrentFocus());
@@ -629,9 +535,6 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mSoftKeyboardTool != null) {
-            mSoftKeyboardTool.dismiss();
-        }
     }
 
     private boolean back() {
@@ -651,37 +554,11 @@ public class SourceEditActivity extends MBaseActivity<SourceEditContract.Present
         return false;
     }
 
-    @Override
-    public void sendText(@NotNull String txt) {
-        if (isEmpty(txt)) return;
-        View view = getWindow().getDecorView().findFocus();
-        if (view instanceof EditText) {
-            EditText editText = (EditText) view;
-            int start = editText.getSelectionStart();
-            int end = editText.getSelectionEnd();
-            Editable edit = editText.getEditableText();//获取EditText的文字
-            if (start < 0 || start >= edit.length()) {
-                edit.append(txt);
-            } else {
-                edit.replace(start, end, txt);//光标所在位置插入文字
-            }
-        }
-    }
-
     private void showKeyboardTopPopupWindow() {
         if (isFinishing()) return;
-        if (mSoftKeyboardTool != null && mSoftKeyboardTool.isShowing()) {
-            return;
-        }
-        if (mSoftKeyboardTool != null & !this.isFinishing()) {
-            mSoftKeyboardTool.showAtLocation(llContent, Gravity.BOTTOM, 0, 0);
-        }
     }
 
     private void closePopupWindow() {
-        if (mSoftKeyboardTool != null && mSoftKeyboardTool.isShowing()) {
-            mSoftKeyboardTool.dismiss();
-        }
     }
 
     private class KeyboardOnGlobalChangeListener implements ViewTreeObserver.OnGlobalLayoutListener {

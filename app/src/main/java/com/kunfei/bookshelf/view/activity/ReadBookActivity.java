@@ -41,7 +41,6 @@ import com.hwangjr.rxbus.RxBus;
 import com.kunfei.basemvplib.AppActivityManager;
 import com.kunfei.basemvplib.BitIntentDataManager;
 import com.kunfei.bookshelf.DbHelper;
-import com.kunfei.bookshelf.MApplication;
 import com.kunfei.bookshelf.R;
 import com.kunfei.bookshelf.base.MBaseActivity;
 import com.kunfei.bookshelf.base.observer.MySingleObserver;
@@ -52,7 +51,6 @@ import com.kunfei.bookshelf.bean.ReplaceRuleBean;
 import com.kunfei.bookshelf.bean.TxtChapterRuleBean;
 import com.kunfei.bookshelf.constant.RxBusTag;
 import com.kunfei.bookshelf.dao.TxtChapterRuleBeanDao;
-import com.kunfei.bookshelf.help.ChapterContentHelp;
 import com.kunfei.bookshelf.help.ReadBookControl;
 import com.kunfei.bookshelf.help.permission.Permissions;
 import com.kunfei.bookshelf.help.permission.PermissionsCompat;
@@ -60,19 +58,16 @@ import com.kunfei.bookshelf.model.ReplaceRuleManager;
 import com.kunfei.bookshelf.model.TxtChapterRuleManager;
 import com.kunfei.bookshelf.presenter.ReadBookPresenter;
 import com.kunfei.bookshelf.presenter.contract.ReadBookContract;
-import com.kunfei.bookshelf.service.ReadAloudService;
 import com.kunfei.bookshelf.utils.BatteryUtil;
 import com.kunfei.bookshelf.utils.NetworkUtils;
 import com.kunfei.bookshelf.utils.ScreenUtils;
 import com.kunfei.bookshelf.utils.SoftInputUtil;
-import com.kunfei.bookshelf.utils.StringUtils;
 import com.kunfei.bookshelf.utils.SystemUtil;
 import com.kunfei.bookshelf.utils.bar.BarHide;
 import com.kunfei.bookshelf.utils.bar.ImmersionBar;
 import com.kunfei.bookshelf.utils.theme.ATH;
 import com.kunfei.bookshelf.utils.theme.ThemeStore;
 import com.kunfei.bookshelf.view.popupwindow.CheckAddShelfPop;
-import com.kunfei.bookshelf.view.popupwindow.MediaPlayerPop;
 import com.kunfei.bookshelf.view.popupwindow.MoreSettingPop;
 import com.kunfei.bookshelf.view.popupwindow.ReadAdjustMarginPop;
 import com.kunfei.bookshelf.view.popupwindow.ReadAdjustPop;
@@ -140,8 +135,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     MoreSettingPop moreSettingPop;
     @BindView(R.id.pb_nextPage)
     ProgressBar progressBarNextPage;
-    @BindView(R.id.mediaPlayerPop)
-    MediaPlayerPop mediaPlayerPop;
     @BindView(R.id.cursor_left)
     ImageView cursorLeft;
     @BindView(R.id.cursor_right)
@@ -156,23 +149,16 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     private ActionBar actionBar;
     private PageLoader mPageLoader;
     private Handler mHandler = new Handler();
-    private Runnable autoPageRunnable;
     private Runnable keepScreenRunnable;
-    private Runnable upHpbNextPage;
-    private int nextPageTime;
     private String noteUrl;
     private Boolean isAdd = false; //判断是否已经添加进书架
-    private ReadAloudService.Status aloudStatus = ReadAloudService.Status.STOP;
     private int screenTimeOut;
-    private int upHpbInterval = 100;
     private Menu menu;
     private CheckAddShelfPop checkAddShelfPop;
     private MoDialogHUD moDialogHUD;
     private ThisBatInfoReceiver batInfoReceiver;
     private ReadBookControl readBookControl = ReadBookControl.getInstance();
 
-    private boolean autoPage = false;
-    private boolean aloudNextPage;
     private int lastX, lastY;
 
     @Override
@@ -186,19 +172,16 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             noteUrl = savedInstanceState.getString("noteUrl");
             isAdd = savedInstanceState.getBoolean("isAdd");
         }
-        readBookControl.initTextDrawableIndex();
         super.onCreate(savedInstanceState);
         screenTimeOut = getResources().getIntArray(R.array.screen_time_out_value)[readBookControl.getScreenTimeOut()];
         keepScreenRunnable = this::unKeepScreenOn;
-        autoPageRunnable = this::nextPage;
-        upHpbNextPage = this::upHpbNextPage;
     }
 
     @Override
     protected void onCreateActivity() {
         setOrientation(readBookControl.getScreenDirection());
         setContentView(R.layout.activity_book_read);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && readBookControl.getToLh()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                 WindowManager.LayoutParams lp = getWindow().getAttributes();
                 lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
@@ -237,42 +220,27 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     @Override
     protected void initImmersionBar() {
         super.initImmersionBar();
-        if (readBookControl.getHideNavigationBar()) {
-            mImmersionBar.fullScreen(true);
-            if (ImmersionBar.hasNavigationBar(this)) {
-                readBottomMenu.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
-            }
+        mImmersionBar.fullScreen(true);
+        if (ImmersionBar.hasNavigationBar(this)) {
+            readBottomMenu.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
+            readAdjustPop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
+            moreSettingPop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
+            readInterfacePop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
+            readAdjustMarginPop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
         }
 
-        if (readBottomMenu.getVisibility() == View.VISIBLE) {
-            if (isImmersionBarEnabled() && !isNightTheme()) {
-                mImmersionBar.statusBarDarkFont(true, 0.2f);
-            } else {
-                mImmersionBar.statusBarDarkFont(false);
-            }
+        if (readBottomMenu.getVisibility() == View.VISIBLE
+                || readAdjustPop.getVisibility() == View.VISIBLE
+                || readInterfacePop.getVisibility() == View.VISIBLE
+                || readAdjustMarginPop.getVisibility() == View.VISIBLE
+                || moreSettingPop.getVisibility() == View.VISIBLE) {
+            mImmersionBar.statusBarDarkFont(true);
             mImmersionBar.hideBar(BarHide.FLAG_SHOW_BAR);
             changeNavigationBarColor(false);
         } else {
-            if (!isImmersionBarEnabled()) {
-                mImmersionBar.statusBarDarkFont(false);
-            } else if (readBookControl.getDarkStatusIcon()) {
-                mImmersionBar.statusBarDarkFont(true, 0.2f);
-            } else {
-                mImmersionBar.statusBarDarkFont(false);
-            }
-
-            if (readBookControl.getHideStatusBar() && readBookControl.getHideNavigationBar()) {
-                mImmersionBar.hideBar(BarHide.FLAG_HIDE_BAR);
-            } else if (readBookControl.getHideStatusBar()) {
-                mImmersionBar.hideBar(BarHide.FLAG_HIDE_STATUS_BAR);
-                changeNavigationBarColor(true);
-            } else if (readBookControl.getHideNavigationBar()) {
-                mImmersionBar.hideBar(BarHide.FLAG_HIDE_NAVIGATION_BAR);
-            } else {
-                mImmersionBar.hideBar(BarHide.FLAG_SHOW_BAR);
-                changeNavigationBarColor(true);
-            }
-
+            mImmersionBar.statusBarDarkFont(true);
+            mImmersionBar.hideBar(BarHide.FLAG_HIDE_BAR);
+            changeNavigationBarColor(false);
         }
 
         mImmersionBar.init();
@@ -288,31 +256,7 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         } else {
             mImmersionBar.showBarDivider();
         }
-        int barColorType = readBookControl.getNavBarColor();
-        if (readBottomMenu.getVisibility() == View.VISIBLE
-                || readAdjustPop.getVisibility() == View.VISIBLE
-                || readInterfacePop.getVisibility() == View.VISIBLE
-                || readAdjustMarginPop.getVisibility() == View.VISIBLE
-                || moreSettingPop.getVisibility() == View.VISIBLE) {
-            barColorType = 0;
-        }
-        switch (barColorType) {
-            case 1:
-                mImmersionBar.navigationBarDarkFont(false, 0.2f);
-                mImmersionBar.navigationBarColor(R.color.black);
-                break;
-            case 2:
-                mImmersionBar.navigationBarDarkFont(true, 0.2f);
-                mImmersionBar.navigationBarColor(R.color.white);
-                break;
-            case 3:
-                mImmersionBar.navigationBarDarkFont(readBookControl.getDarkStatusIcon(), 0.2f);
-                mImmersionBar.navigationBarColorInt(readBookControl.getBgColor());
-                break;
-            default:
-
-                break;
-        }
+        mImmersionBar.navigationBarColor(R.color.white);
     }
 
     /**
@@ -349,43 +293,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         } else {
             keepScreenOn(false);
         }
-    }
-
-    /**
-     * 自动翻页
-     */
-    private void autoPage() {
-        mHandler.removeCallbacks(upHpbNextPage);
-        mHandler.removeCallbacks(autoPageRunnable);
-        if (autoPage) {
-            progressBarNextPage.setVisibility(View.VISIBLE);
-            //每页按字数计算一次时间
-            nextPageTime = mPageLoader.curPageLength() * 60 * 1000 / readBookControl.getCPM();
-            if (0 == nextPageTime) nextPageTime = 1000;
-            progressBarNextPage.setMax(nextPageTime);
-            mHandler.postDelayed(upHpbNextPage, upHpbInterval);
-            mHandler.postDelayed(autoPageRunnable, nextPageTime);
-        } else {
-            progressBarNextPage.setVisibility(View.INVISIBLE);
-        }
-        readBottomMenu.setAutoPage(autoPage);
-    }
-
-    /**
-     * 更新自动翻页进度条
-     */
-    private void upHpbNextPage() {
-        nextPageTime = nextPageTime - upHpbInterval;
-        progressBarNextPage.setProgress(nextPageTime);
-        mHandler.postDelayed(upHpbNextPage, upHpbInterval);
-    }
-
-    /**
-     * 停止自动翻页
-     */
-    private void autoPageStop() {
-        autoPage = false;
-        autoPage();
     }
 
     /**
@@ -491,12 +398,10 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
 
             }
         });
-        if (MApplication.isEInkMode) {
-            menuTopIn.setDuration(0);
-            menuTopOut.setDuration(0);
-            menuBottomIn.setDuration(0);
-            menuBottomOut.setDuration(0);
-        }
+        menuTopIn.setDuration(0);
+        menuTopOut.setDuration(0);
+        menuBottomIn.setDuration(0);
+        menuBottomOut.setDuration(0);
     }
 
     @Override
@@ -507,7 +412,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         mPresenter.initData(this);
         appBar.setPadding(0, ScreenUtils.getStatusBarHeight(), 0, 0);
         appBar.setBackgroundColor(ThemeStore.primaryColor(this));
-        readBottomMenu.setFabNightTheme(isNightTheme());
         //弹窗
         moDialogHUD = new MoDialogHUD(this);
         initBottomMenu();
@@ -515,34 +419,10 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         initReadAdjustPop();
         initReadAdjustMarginPop();
         initMoreSettingPop();
-        initMediaPlayer();
         initReadLongPressPop();
         pageView.setBackground(readBookControl.getTextBackground(this));
         cursorLeft.getDrawable().setColorFilter(ThemeStore.accentColor(this), PorterDuff.Mode.SRC_ATOP);
         cursorRight.getDrawable().setColorFilter(ThemeStore.accentColor(this), PorterDuff.Mode.SRC_ATOP);
-    }
-
-    /**
-     * 初始化播放界面
-     */
-    private void initMediaPlayer() {
-        mediaPlayerPop.setIvChapterClickListener(v -> ChapterListActivity.startThis(ReadBookActivity.this, mPresenter.getBookShelf(), mPresenter.getChapterList()));
-        mediaPlayerPop.setIvTimerClickListener(v -> ReadAloudService.setTimer(getContext(), 10));
-        mediaPlayerPop.setIvCoverBgClickListener(v -> {
-            flMenu.setVisibility(View.VISIBLE);
-            llMenuTop.setVisibility(View.VISIBLE);
-            llMenuTop.startAnimation(menuTopIn);
-        });
-        mediaPlayerPop.setPlayClickListener(v -> onMediaButton(ReadAloudService.ActionMediaPlay));
-        mediaPlayerPop.setPrevClickListener(v -> {
-            mPresenter.getBookShelf().setDurChapterPage(0);
-            mPageLoader.skipToPrePage();
-        });
-        mediaPlayerPop.setNextClickListener(v -> {
-            mPresenter.getBookShelf().setDurChapterPage(0);
-            mPageLoader.skipToNextPage();
-        });
-        mediaPlayerPop.setCallback(dur -> ReadAloudService.setProgress(ReadBookActivity.this, dur));
     }
 
     /**
@@ -558,26 +438,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             }
 
             @Override
-            public void onMediaButton() {
-                ReadBookActivity.this.onMediaButton(ReadAloudService.ActionMediaPlay);
-            }
-
-            @Override
-            public void autoPage() {
-                if (ReadAloudService.running) {
-                    ReadBookActivity.this.toast(R.string.aloud_can_not_auto_page);
-                    return;
-                }
-                ReadBookActivity.this.autoPage = !ReadBookActivity.this.autoPage;
-                ReadBookActivity.this.autoPage();
-            }
-
-            @Override
-            public void setNightTheme() {
-                ReadBookActivity.this.setNightTheme(!isNightTheme());
-            }
-
-            @Override
             public void skipPreChapter() {
                 if (mPresenter.getBookShelf() != null) {
                     mPageLoader.skipPreChapter();
@@ -589,12 +449,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                 if (mPresenter.getBookShelf() != null) {
                     mPageLoader.skipNextChapter();
                 }
-            }
-
-            @Override
-            public void openReplaceRule() {
-                popMenuOut();
-                ReplaceRuleActivity.startThis(ReadBookActivity.this, mPresenter.getBookShelf());
             }
 
             @Override
@@ -640,22 +494,7 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
      * 初始化调节
      */
     private void initReadAdjustPop() {
-        readAdjustPop.setListener(this, new ReadAdjustPop.Callback() {
-            @Override
-            public void speechRateFollowSys() {
-                if (ReadAloudService.running) {
-                    ReadAloudService.stop(ReadBookActivity.this);
-                }
-            }
-
-            @Override
-            public void changeSpeechRate(int speechRate) {
-                if (ReadAloudService.running) {
-                    ReadAloudService.pause(ReadBookActivity.this);
-                    ReadAloudService.resume(ReadBookActivity.this);
-                }
-            }
-        });
+        readAdjustPop.setListener(this);
     }
 
     /**
@@ -717,7 +556,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
 
             @Override
             public void bgChange() {
-                readBookControl.initTextDrawableIndex();
                 pageView.setBackground(readBookControl.getTextBackground(ReadBookActivity.this));
                 initImmersionBar();
                 if (mPageLoader != null) {
@@ -796,8 +634,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     @Override
     public void startLoadingBook() {
         initPageView();
-        mediaPlayerPop.setCover(mPresenter.getBookShelf().getCustomCoverPath() != null ? mPresenter.getBookShelf().getCustomCoverPath()
-                : mPresenter.getBookShelf().getBookInfoBean().getCoverUrl());
     }
 
     /**
@@ -880,72 +716,15 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                      * 翻页成功
                      */
                     @Override
-                    public void onPageChange(int chapterIndex, int pageIndex, boolean resetReadAloud) {
+                    public void onPageChange(int chapterIndex, int pageIndex) {
                         mPresenter.getBookShelf().setDurChapter(chapterIndex);
                         mPresenter.getBookShelf().setDurChapterPage(pageIndex);
                         mPresenter.saveProgress();
                         readBottomMenu.getReadProgress().post(
                                 () -> readBottomMenu.getReadProgress().setProgress(pageIndex)
                         );
-                        Long end = mPresenter.getDurChapter().getEnd();
-                        int audioSize = end != null ? end.intValue() : 0;
-                        mediaPlayerPop.upAudioSize(audioSize);
-                        mediaPlayerPop.upAudioDur(mPresenter.getBookShelf().getDurChapterPage());
-                        if (mPresenter.getBookShelf().isAudio() && mPageLoader.getPageStatus() == TxtChapter.Status.FINISH) {
-                            if (mediaPlayerPop.getVisibility() != View.VISIBLE) {
-                                mediaPlayerPop.setVisibility(View.VISIBLE);
-                            }
-                        } else {
-                            if (mediaPlayerPop.getVisibility() == View.VISIBLE) {
-                                mediaPlayerPop.setVisibility(View.GONE);
-                            }
-                        }
-                        if ((ReadAloudService.running)) {
-                            if (resetReadAloud) {
-                                readAloud();
-                                return;
-                            }
-                            if (pageIndex == 0) {
-                                readAloud();
-                                return;
-                            }
-                        }
-
-                        //启动朗读
-                        if (getIntent().getBooleanExtra("readAloud", false)
-                                && pageIndex >= 0 && mPageLoader.getContent() != null) {
-                            getIntent().putExtra("readAloud", false);
-                            onMediaButton(ReadAloudService.ActionMediaPlay);
-                            return;
-                        }
-                        autoPage();
                     }
 
-                    @Override
-                    public void vipPop() {
-                        moDialogHUD.showTwoButton(ReadBookActivity.this.getString(R.string.donate_s), "领取红包", (v) -> {
-                                    DonateActivity.getZfbHb(ReadBookActivity.this);
-                                    mHandler.postDelayed(() -> {
-                                        ReadBookActivity.this.refreshDurChapter();
-                                        moDialogHUD.dismiss();
-                                    }, 2000);
-                                },
-                                "关注公众号",
-                                (v) -> {
-                                    ClipboardManager clipboard = (ClipboardManager) ReadBookActivity.this.getSystemService(Context.CLIPBOARD_SERVICE);
-                                    ClipData clipData = ClipData.newPlainText(null, "开源阅读软件");
-                                    if (clipboard != null) {
-                                        clipboard.setPrimaryClip(clipData);
-                                        toast("[开源阅读软件],已复制成功,可到微信搜索");
-                                    }
-                                    MApplication.getInstance().upDonateHb();
-                                    mHandler.postDelayed(() -> {
-                                        ReadBookActivity.this.refreshDurChapter();
-                                        moDialogHUD.dismiss();
-                                    }, 1000);
-                                },
-                                true);
-                    }
                 }
         );
         mPageLoader.updateBattery(BatteryUtil.getLevel(this));
@@ -1485,24 +1264,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     }
 
     /**
-     * 朗读
-     */
-    private void readAloud() {
-        aloudNextPage = false;
-        String unReadContent = mPageLoader.getUnReadContent();
-        if (mPresenter.getBookShelf() != null && mPageLoader != null && !StringUtils.isTrimEmpty(unReadContent)) {
-            ReadAloudService.play(ReadBookActivity.this, false, unReadContent,
-                    mPresenter.getBookShelf().getBookInfoBean().getName(),
-                    ChapterContentHelp.getInstance().replaceContent(mPresenter.getBookShelf().getBookInfoBean().getName(),
-                            mPresenter.getBookShelf().getTag(),
-                            mPresenter.getBookShelf().getDurChapterName(),
-                            mPresenter.getBookShelf().getReplaceEnable()),
-                    mPresenter.getBookShelf().isAudio(),
-                    mPresenter.getBookShelf().getDurChapterPage());
-        }
-    }
-
-    /**
      * 检查是否加入书架
      */
     public boolean checkAddShelf() {
@@ -1536,75 +1297,8 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     }
 
     /**
-     * 更新朗读状态
-     */
-    @Override
-    public void upAloudState(ReadAloudService.Status status) {
-        aloudStatus = status;
-        autoPageStop();
-        switch (status) {
-            case NEXT:
-                if (mPageLoader == null) {
-                    ReadAloudService.stop(this);
-                    break;
-                }
-                if (!mPageLoader.skipNextChapter()) {
-                    ReadAloudService.stop(this);
-                }
-                break;
-            case PLAY:
-                readBottomMenu.setFabReadAloudImage(R.drawable.ic_pause_outline_24dp);
-                readBottomMenu.setReadAloudTimer(true);
-                mediaPlayerPop.setFabReadAloudImage(R.drawable.ic_pause_24dp);
-                mediaPlayerPop.setSeekBarEnable(true);
-                break;
-            case PAUSE:
-                readBottomMenu.setFabReadAloudImage(R.drawable.ic_play_outline_24dp);
-                readBottomMenu.setReadAloudTimer(true);
-                mediaPlayerPop.setFabReadAloudImage(R.drawable.ic_play_24dp);
-                mediaPlayerPop.setSeekBarEnable(false);
-                break;
-            default:
-                readBottomMenu.setFabReadAloudImage(R.drawable.ic_read_aloud);
-                readBottomMenu.setReadAloudTimer(false);
-                mediaPlayerPop.setFabReadAloudImage(R.drawable.ic_play_24dp);
-                pageView.drawPage(0);
-                pageView.invalidate();
-                pageView.drawPage(-1);
-                pageView.drawPage(1);
-                pageView.invalidate();
-        }
-    }
-
-    /**
-     * 更新定时
-     */
-    @Override
-    public void upAloudTimer(String text) {
-        readBottomMenu.setReadAloudTimer(text);
-    }
-
-    /**
      * 开始朗读第start个字符
      */
-    @Override
-    public void readAloudStart(int start) {
-        aloudNextPage = true;
-        if (mPageLoader != null) {
-            mPageLoader.readAloudStart(start);
-        }
-    }
-
-    /**
-     * 朗读长度
-     */
-    @Override
-    public void readAloudLength(int readAloudLength) {
-        if (mPageLoader != null && aloudNextPage) {
-            mPageLoader.readAloudLength(readAloudLength);
-        }
-    }
-
     /**
      * 刷新
      */
@@ -1617,7 +1311,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             if (mPageLoader != null) {
                 mPageLoader.refreshUi();
             }
-            readInterfacePop.setBg();
             initImmersionBar();
         }
     }
@@ -1656,12 +1349,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                 } else if (flMenu.getVisibility() == View.VISIBLE) {
                     finish();
                     return true;
-                } else if (ReadAloudService.running && aloudStatus == ReadAloudService.Status.PLAY) {
-                    ReadAloudService.pause(this);
-                    if (!mPresenter.getBookShelf().isAudio()) {
-                        toast(R.string.read_aloud_pause);
-                    }
-                    return true;
                 } else {
                     finish();
                     return true;
@@ -1686,12 +1373,12 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                     }
                     return true;
                 }
-                if (readBookControl.getCanKeyTurn(aloudStatus == ReadAloudService.Status.PLAY) && keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                if (readBookControl.getCanKeyTurn() && keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
                     if (mPageLoader != null) {
                         mPageLoader.skipToNextPage();
                     }
                     return true;
-                } else if (readBookControl.getCanKeyTurn(aloudStatus == ReadAloudService.Status.PLAY) && keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                } else if (readBookControl.getCanKeyTurn() && keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
                     if (mPageLoader != null) {
                         mPageLoader.skipToPrePage();
                     }
@@ -1708,7 +1395,7 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (flMenu.getVisibility() != View.VISIBLE) {
-            if (readBookControl.getCanKeyTurn(aloudStatus == ReadAloudService.Status.PLAY)
+            if (readBookControl.getCanKeyTurn()
                     && (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
                     || keyCode == KeyEvent.KEYCODE_VOLUME_UP
                     || keyCode == preferences.getInt("nextKeyCode", 0)
@@ -1767,24 +1454,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
 
     }
 
-    /**
-     * 更新音频长度
-     */
-    @Override
-    public void upAudioSize(int audioSize) {
-        mediaPlayerPop.upAudioSize(audioSize);
-    }
-
-    /**
-     * 更新播放进度
-     */
-    @Override
-    public void upAudioDur(int audioDur) {
-        mediaPlayerPop.upAudioDur(audioDur);
-        mPresenter.getBookShelf().setDurChapterPage(audioDur);
-        mPresenter.saveProgress();
-    }
-
     @Override
     public String getNoteUrl() {
         return noteUrl;
@@ -1810,56 +1479,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                     return Unit.INSTANCE;
                 })
                 .request();
-    }
-
-    /**
-     * 朗读按钮
-     */
-    @Override
-    public void onMediaButton(String cmd) {
-        if (!ReadAloudService.running) {
-            aloudStatus = ReadAloudService.Status.STOP;
-            SystemUtil.ignoreBatteryOptimization(this);
-        }
-        switch (aloudStatus) {
-            case PAUSE:
-                if (cmd.equals(ReadAloudService.ActionMediaPlay)) {
-                    ReadAloudService.resume(this);
-                    readBottomMenu.setFabReadAloudText(getString(R.string.read_aloud));
-                } else if (cmd.equals(ReadAloudService.ActionMediaPrev)) {
-                    //停止倒计时
-                    ReadAloudService.setTimer(getContext(), ReadAloudService.maxTimeMinute + 1);
-                    //语音提示倒计时结束
-                    ReadAloudService.tts_ui_timer_stop(this);
-                } else if (cmd.equals(ReadAloudService.ActionMediaNext)) {
-                    //翻到上一章并开始朗读
-                    if (mPageLoader != null) {
-                        mPageLoader.skipPreChapter();
-                    }
-                    ReadAloudService.resume(this);
-                    readBottomMenu.setFabReadAloudText(getString(R.string.read_aloud));
-                }
-                break;
-            case PLAY:
-                if (cmd.equals(ReadAloudService.ActionMediaPlay)) {
-                    ReadAloudService.pause(this);
-                    readBottomMenu.setFabReadAloudText(getString(R.string.read_aloud_pause));
-                } else if (cmd.equals(ReadAloudService.ActionMediaPrev)) {
-                    //倒计时增加
-                    ReadAloudService.setTimer(getContext(), 10);
-                    //语音提示剩余时间
-                    ReadAloudService.tts_ui_timer_remaining(this);
-                } else if (cmd.equals(ReadAloudService.ActionMediaNext)) {
-                    //翻到下一章
-                    if (mPageLoader != null) {
-                        mPageLoader.skipNextChapter();
-                    }
-                }
-                break;
-            default:
-                ReadBookActivity.this.popMenuOut();
-                readAloud();
-        }
     }
 
     @Override
@@ -1899,7 +1518,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         if (batInfoReceiver != null) {
             batInfoReceiver.unregisterThis();
         }
-        ReadAloudService.stop(this);
         if (mPageLoader != null) {
             mPageLoader.closeBook();
             mPageLoader = null;
@@ -1943,16 +1561,14 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         @SuppressLint("DefaultLocale")
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (readBookControl.getHideStatusBar()) {
-                if (Intent.ACTION_TIME_TICK.equals(intent.getAction())) {
-                    if (mPageLoader != null) {
-                        mPageLoader.updateTime();
-                    }
-                } else if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
-                    int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-                    if (mPageLoader != null) {
-                        mPageLoader.updateBattery(level);
-                    }
+            if (Intent.ACTION_TIME_TICK.equals(intent.getAction())) {
+                if (mPageLoader != null) {
+                    mPageLoader.updateTime();
+                }
+            } else if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
+                int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
+                if (mPageLoader != null) {
+                    mPageLoader.updateBattery(level);
                 }
             }
         }

@@ -137,7 +137,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.MyViewHolder> 
         if (fileIcon == null) {
             fileIcon = ConvertUtils.toDrawable(FilePickerIcon.getFILE());
         }
-        ArrayList<FileItem> datas = new ArrayList<FileItem>();
+        ArrayList<FileItem> datas = new ArrayList<>();
         if (rootPath == null) {
             rootPath = path;
         }

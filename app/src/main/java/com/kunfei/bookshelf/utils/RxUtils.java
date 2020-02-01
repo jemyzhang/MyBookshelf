@@ -25,7 +25,7 @@ public class RxUtils {
     }
 
     public static <T, R> TwoTuple<T, R> twoTuple(T first, R second) {
-        return new TwoTuple<T, R>(first, second);
+        return new TwoTuple<>(first, second);
     }
 
     public static class TwoTuple<A, B> {

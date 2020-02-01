@@ -39,7 +39,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class BookListPresenter extends BasePresenterImpl<BookListContract.View> implements BookListContract.Presenter {
-    private int threadsNum = 6;
     private int refreshIndex;
     private List<BookShelfBean> bookShelfBeans;
     private int group;
@@ -116,12 +115,9 @@ public class BookListPresenter extends BasePresenterImpl<BookListContract.View> 
 
     private void startRefreshBook() {
         if (mView.getContext() != null) {
-            threadsNum = mView.getPreferences().getInt(mView.getContext().getString(R.string.pk_threads_num), 6);
             if (bookShelfBeans != null && bookShelfBeans.size() > 0) {
                 refreshIndex = -1;
-                for (int i = 1; i <= threadsNum; i++) {
-                    refreshBookshelf();
-                }
+                refreshBookshelf();
             }
         }
     }
@@ -174,7 +170,7 @@ public class BookListPresenter extends BasePresenterImpl<BookListContract.View> 
             } else {
                 refreshBookshelf();
             }
-        } else if (refreshIndex >= bookShelfBeans.size() + threadsNum - 1) {
+        } else if (refreshIndex >= bookShelfBeans.size()) {
             if (errBooks.size() > 0) {
                 mView.toast(TextUtils.join("、", errBooks) + " 更新失败！");
                 errBooks.clear();

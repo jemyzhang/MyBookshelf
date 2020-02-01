@@ -35,23 +35,8 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_qr_code_camera"
-        android:title="@string/import_by_qr_code"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_share_it"
-        android:title="@string/qr_share"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_share_str"
         android:title="@string/str_share"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_share_wifi"
-        android:title="@string/wifi_share"
         app:showAsAction="never" />
 
     <item

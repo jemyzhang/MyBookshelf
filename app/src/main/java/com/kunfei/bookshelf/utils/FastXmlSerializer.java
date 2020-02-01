@@ -37,7 +37,7 @@ import java.nio.charset.UnsupportedCharsetException;
  * {@hide}
  */
 public class FastXmlSerializer implements XmlSerializer {
-    private static final String ESCAPE_TABLE[] = new String[]{
+    private static final String[] ESCAPE_TABLE = new String[]{
             null, null, null, null, null, null, null, null,  // 0-7
             null, null, null, null, null, null, null, null,  // 8-15
             null, null, null, null, null, null, null, null,  // 16-23
@@ -311,10 +311,7 @@ public class FastXmlSerializer implements XmlSerializer {
         if (true) {
             try {
                 mCharset = Charset.forName(encoding).newEncoder();
-            } catch (IllegalCharsetNameException e) {
-                throw (UnsupportedEncodingException) (new UnsupportedEncodingException(
-                        encoding).initCause(e));
-            } catch (UnsupportedCharsetException e) {
+            } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
                 throw (UnsupportedEncodingException) (new UnsupportedEncodingException(
                         encoding).initCause(e));
             }

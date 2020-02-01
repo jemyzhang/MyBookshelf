@@ -10,6 +10,7 @@ import android.widget.TextView
 import com.kunfei.bookshelf.R
 import com.kunfei.bookshelf.help.ReadBookControl
 import kotlinx.android.synthetic.main.pop_read_adjust_margin.view.*
+import kotlinx.android.synthetic.main.pop_read_adjust_margin.view.vw_bg
 import org.jetbrains.anko.sdk27.listeners.onClick
 
 class ReadAdjustMarginPop : FrameLayout {
@@ -33,6 +34,11 @@ class ReadAdjustMarginPop : FrameLayout {
     private fun init(context: Context) {
         inflate(context, R.layout.pop_read_adjust_margin, this)
         vw_bg.setOnClickListener(null)
+        vwNavigationBar_pram.setOnClickListener(null)
+    }
+
+    fun setNavigationBarHeight(height: Int) {
+        vwNavigationBar_pram.getLayoutParams().height = height
     }
 
     fun setListener(activity: Activity, callback: Callback) {

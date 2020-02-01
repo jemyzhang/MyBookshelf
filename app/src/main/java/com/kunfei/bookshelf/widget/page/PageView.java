@@ -19,13 +19,9 @@ import com.kunfei.bookshelf.help.ReadBookControl;
 import com.kunfei.bookshelf.utils.ScreenUtils;
 import com.kunfei.bookshelf.utils.bar.ImmersionBar;
 import com.kunfei.bookshelf.view.activity.ReadBookActivity;
-import com.kunfei.bookshelf.widget.page.animation.CoverPageAnim;
 import com.kunfei.bookshelf.widget.page.animation.HorizonPageAnim;
 import com.kunfei.bookshelf.widget.page.animation.NonePageAnim;
 import com.kunfei.bookshelf.widget.page.animation.PageAnimation;
-import com.kunfei.bookshelf.widget.page.animation.ScrollPageAnim;
-import com.kunfei.bookshelf.widget.page.animation.SimulationPageAnim;
-import com.kunfei.bookshelf.widget.page.animation.SlidePageAnim;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +81,7 @@ public class PageView extends View implements PageAnimation.OnPageChangeListener
     //长按时间
     private static final int LONG_PRESS_TIMEOUT = 1000;
     //选择的列
-    private List<TxtLine> mSelectLines = new ArrayList<TxtLine>();
+    private List<TxtLine> mSelectLines = new ArrayList<>();
 
 
     public PageView(Context context) {
@@ -142,29 +138,7 @@ public class PageView extends View implements PageAnimation.OnPageChangeListener
     void setPageMode(PageAnimation.Mode pageMode, int marginTop, int marginBottom) {
         //视图未初始化的时候，禁止调用
         if (mViewWidth == 0 || mViewHeight == 0 || mPageLoader == null) return;
-        if (!readBookControl.getHideStatusBar()) {
-            marginTop = marginTop + statusBarHeight;
-        }
-        switch (pageMode) {
-            case SIMULATION:
-                mPageAnim = new SimulationPageAnim(mViewWidth, mViewHeight, this, this);
-                break;
-            case COVER:
-                mPageAnim = new CoverPageAnim(mViewWidth, mViewHeight, this, this);
-                break;
-            case SLIDE:
-                mPageAnim = new SlidePageAnim(mViewWidth, mViewHeight, this, this);
-                break;
-            case NONE:
-                mPageAnim = new NonePageAnim(mViewWidth, mViewHeight, this, this);
-                break;
-            case SCROLL:
-                mPageAnim = new ScrollPageAnim(mViewWidth, mViewHeight, 0,
-                        marginTop, marginBottom, this, this);
-                break;
-            default:
-                mPageAnim = new SimulationPageAnim(mViewWidth, mViewHeight, this, this);
-        }
+        mPageAnim = new NonePageAnim(mViewWidth, mViewHeight, this, this);
     }
 
     public ReadBookActivity getActivity() {
@@ -181,19 +155,11 @@ public class PageView extends View implements PageAnimation.OnPageChangeListener
     }
 
     public void autoPrevPage() {
-        if (mPageAnim instanceof ScrollPageAnim) {
-            ((ScrollPageAnim) mPageAnim).startAnim(PageAnimation.Direction.PREV);
-        } else {
-            startHorizonPageAnim(PageAnimation.Direction.PREV);
-        }
+        startHorizonPageAnim(PageAnimation.Direction.PREV);
     }
 
     public void autoNextPage() {
-        if (mPageAnim instanceof ScrollPageAnim) {
-            ((ScrollPageAnim) mPageAnim).startAnim(PageAnimation.Direction.NEXT);
-        } else {
-            startHorizonPageAnim(PageAnimation.Direction.NEXT);
-        }
+        startHorizonPageAnim(PageAnimation.Direction.NEXT);
     }
 
     private synchronized void startHorizonPageAnim(PageAnimation.Direction direction) {
@@ -293,8 +259,6 @@ public class PageView extends View implements PageAnimation.OnPageChangeListener
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (mPageAnim instanceof ScrollPageAnim)
-            super.onDraw(canvas);
         //绘制动画
         if (mPageAnim != null) {
             mPageAnim.draw(canvas);
@@ -563,9 +527,6 @@ public class PageView extends View implements PageAnimation.OnPageChangeListener
                         return true;
                     }
 
-                    if (mPageAnim instanceof ScrollPageAnim && readBookControl.disableScrollClickTurn()) {
-                        return true;
-                    }
                 }
 
                 if (firstSelectTxtChar == null || isMove) {//长安选择删除选中状态

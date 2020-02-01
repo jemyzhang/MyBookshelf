@@ -35,7 +35,6 @@ public class SearchBookModel {
     private Scheduler scheduler;
     private long startThisSearchTime;
     private List<SearchEngine> searchEngineS = new ArrayList<>();
-    private int threadsNum;
     private int page = 0;
     private int searchEngineIndex;
     private int searchSuccessNum;
@@ -48,8 +47,7 @@ public class SearchBookModel {
 
     public SearchBookModel(OnSearchListener searchListener, List<BookSourceBean> sourceBeanList) {
         this.searchListener = searchListener;
-        threadsNum = MApplication.getConfigPreferences().getInt(MApplication.getInstance().getString(R.string.pk_threads_num), 6);
-        executorService = Executors.newFixedThreadPool(threadsNum);
+        executorService = Executors.newFixedThreadPool(1);
         scheduler = Schedulers.from(executorService);
         compositeDisposable = new CompositeDisposable();
         if (sourceBeanList == null) {
@@ -130,9 +128,7 @@ public class SearchBookModel {
         }
         searchSuccessNum = 0;
         searchEngineIndex = -1;
-        for (int i = 0; i < threadsNum; i++) {
-            searchOnEngine(content, bookShelfS, searchTime);
-        }
+        searchOnEngine(content, bookShelfS, searchTime);
     }
 
     private synchronized void searchOnEngine(final String content, List<BookShelfBean> bookShelfS, final long searchTime) {
@@ -193,7 +189,7 @@ public class SearchBookModel {
                 searchOnEngine(content, bookShelfS, searchTime);
             }
         } else {
-            if (searchEngineIndex >= searchEngineS.size() + threadsNum - 1) {
+            if (searchEngineIndex >= searchEngineS.size()) {
                 if (searchSuccessNum == 0 && searchListener.getItemCount() == 0) {
                     if (page == 1) {
                         searchBookError(new Throwable("未搜索到内容"));

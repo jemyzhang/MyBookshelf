@@ -127,7 +127,6 @@ public class FindBookFragment extends MBaseFragment<FindBookContract.Presenter> 
     public void upData(List<RecyclerViewData> group) {
         this.data = group;
         upStyle();
-        upUI();
     }
 
     public void upStyle() {
