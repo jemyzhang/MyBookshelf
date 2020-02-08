@@ -241,3 +241,5 @@
 -keep class org.xmlpull.v1.** { *; }
 -keep class com.kunfei.bookshelf.dao.**{*;}
 -keep class com.kunfei.bookshelf.help.**{*;}
+-keep class com.kunfei.bookshelf.utils.**{*;}
+-keep class com.kunfei.bookshelf.bean.**{*;}

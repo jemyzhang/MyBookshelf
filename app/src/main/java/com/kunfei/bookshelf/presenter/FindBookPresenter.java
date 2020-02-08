@@ -77,7 +77,7 @@ public class FindBookPresenter extends BasePresenterImpl<FindBookContract.View> 
                         FindKindGroupBean groupBean = new FindKindGroupBean();
                         groupBean.setGroupName(sourceBean.getBookSourceName());
                         groupBean.setGroupTag(sourceBean.getBookSourceUrl());
-                        group.add(new RecyclerViewData(groupBean, children, false));
+                        //group.add(new RecyclerViewData(groupBean, children, false));
                         if (isJsAndCache) {
                             aCache.put(sourceBean.getBookSourceUrl(), findRule);
                         }
@@ -98,7 +98,7 @@ public class FindBookPresenter extends BasePresenterImpl<FindBookContract.View> 
 
                     @Override
                     public void onSuccess(List<RecyclerViewData> recyclerViewData) {
-                        mView.upData(recyclerViewData);
+                        //mView.upData(recyclerViewData);
                         disposable.dispose();
                         disposable = null;
                     }
