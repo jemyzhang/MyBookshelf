@@ -65,6 +65,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import kotlin.Unit;
 
+import com.github.zackratos.ultimatebar.UltimateBar;
 import static com.kunfei.bookshelf.utils.NetworkUtils.isNetWorkAvailable;
 
 public class MainActivity extends BaseTabActivity<MainContract.Presenter> implements MainContract.View, BookListFragment.CallbackValue {
@@ -100,6 +101,10 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
             resumed = savedInstanceState.getBoolean("resumed");
         }
         group = preferences.getInt("bookshelfGroup", 0);
+        UltimateBar.Companion.with(this)
+                .applyNavigation(false)
+                .create()
+                .drawableBar();
         super.onCreate(savedInstanceState);
     }
 
@@ -144,14 +149,6 @@ public class MainActivity extends BaseTabActivity<MainContract.Presenter> implem
         }
     }
 
-
-    /**
-     * 沉浸状态栏
-     */
-    @Override
-    public void initImmersionBar() {
-        super.initImmersionBar();
-    }
 
     @Override
     protected void initData() {

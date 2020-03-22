@@ -25,7 +25,6 @@ import com.kunfei.bookshelf.R;
 import com.kunfei.bookshelf.constant.RxBusTag;
 import com.kunfei.bookshelf.utils.ColorUtil;
 import com.kunfei.bookshelf.utils.SoftInputUtil;
-import com.kunfei.bookshelf.utils.bar.ImmersionBar;
 import com.kunfei.bookshelf.utils.theme.MaterialValueHelper;
 import com.kunfei.bookshelf.utils.theme.ThemeStore;
 
@@ -35,7 +34,6 @@ import java.util.ArrayList;
 public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T> {
     private static final String TAG = MBaseActivity.class.getSimpleName();
     public final SharedPreferences preferences = MApplication.getConfigPreferences();
-    protected ImmersionBar mImmersionBar;
     private Snackbar snackbar;
 
     @Override
@@ -45,8 +43,6 @@ public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getWindow().getDecorView().setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
         }
-        mImmersionBar = ImmersionBar.with(this);
-        initImmersionBar();
     }
 
     @SuppressWarnings("NullableProblems")
@@ -54,13 +50,11 @@ public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         // 如果你的app可以横竖屏切换，并且适配4.4或者emui3手机请务必在onConfigurationChanged方法里添加这句话
-        ImmersionBar.with(this).init();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ImmersionBar.with(this).destroy();
     }
 
     @Override
@@ -125,23 +119,6 @@ public abstract class MBaseActivity<T extends IPresenter> extends BaseActivity<T
 
         }
         return super.onMenuOpened(featureId, menu);
-    }
-
-    /**
-     * 沉浸状态栏
-     */
-    protected void initImmersionBar() {
-        try {
-            mImmersionBar.transparentStatusBar();
-        } catch (Exception ignored) {
-        }
-        try {
-            mImmersionBar.statusBarDarkFont(true);
-            mImmersionBar.navigationBarColor(R.color.white);
-            mImmersionBar.navigationBarDarkFont(true);
-            mImmersionBar.init();
-        } catch (Exception ignored) {
-        }
     }
 
     /**

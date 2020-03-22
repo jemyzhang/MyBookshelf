@@ -63,8 +63,7 @@ import com.kunfei.bookshelf.utils.NetworkUtils;
 import com.kunfei.bookshelf.utils.ScreenUtils;
 import com.kunfei.bookshelf.utils.SoftInputUtil;
 import com.kunfei.bookshelf.utils.SystemUtil;
-import com.kunfei.bookshelf.utils.bar.BarHide;
-import com.kunfei.bookshelf.utils.bar.ImmersionBar;
+import com.github.zackratos.ultimatebar.UltimateBar;
 import com.kunfei.bookshelf.utils.theme.ATH;
 import com.kunfei.bookshelf.utils.theme.ThemeStore;
 import com.kunfei.bookshelf.view.popupwindow.CheckAddShelfPop;
@@ -210,53 +209,12 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            initImmersionBar();
+            UltimateBar.Companion.with(this)
+                    .applyNavigation(true)
+                    .create()
+                    .hideBar();
+            screenOffTimerStart();
         }
-    }
-
-    /**
-     * 状态栏
-     */
-    @Override
-    protected void initImmersionBar() {
-        super.initImmersionBar();
-        mImmersionBar.fullScreen(true);
-        if (ImmersionBar.hasNavigationBar(this)) {
-            readBottomMenu.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
-            readAdjustPop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
-            moreSettingPop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
-            readInterfacePop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
-            readAdjustMarginPop.setNavigationBarHeight(ImmersionBar.getNavigationBarHeight(this));
-        }
-
-        if (readBottomMenu.getVisibility() == View.VISIBLE
-                || readAdjustPop.getVisibility() == View.VISIBLE
-                || readInterfacePop.getVisibility() == View.VISIBLE
-                || readAdjustMarginPop.getVisibility() == View.VISIBLE
-                || moreSettingPop.getVisibility() == View.VISIBLE) {
-            mImmersionBar.statusBarDarkFont(true);
-            mImmersionBar.hideBar(BarHide.FLAG_SHOW_BAR);
-            changeNavigationBarColor(false);
-        } else {
-            mImmersionBar.statusBarDarkFont(true);
-            mImmersionBar.hideBar(BarHide.FLAG_HIDE_BAR);
-            changeNavigationBarColor(false);
-        }
-
-        mImmersionBar.init();
-        screenOffTimerStart();
-    }
-
-    /**
-     * 修改导航栏颜色
-     */
-    private void changeNavigationBarColor(boolean hideBarDivider) {
-        if (hideBarDivider) {
-            mImmersionBar.hideBarDivider();
-        } else {
-            mImmersionBar.showBarDivider();
-        }
-        mImmersionBar.navigationBarColor(R.color.white);
     }
 
     /**
@@ -315,13 +273,11 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         menuTopIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                initImmersionBar();
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
                 vMenuBg.setOnClickListener(v -> popMenuOut());
-                initImmersionBar();
             }
 
             @Override
@@ -333,7 +289,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         menuBottomIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                initImmersionBar();
             }
 
             @Override
@@ -353,7 +308,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             @Override
             public void onAnimationStart(Animation animation) {
                 vMenuBg.setOnClickListener(null);
-                initImmersionBar();
             }
 
             @Override
@@ -365,7 +319,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                 readAdjustMarginPop.setVisibility(View.INVISIBLE);
                 readInterfacePop.setVisibility(View.INVISIBLE);
                 moreSettingPop.setVisibility(View.INVISIBLE);
-                initImmersionBar();
             }
 
             @Override
@@ -378,7 +331,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             @Override
             public void onAnimationStart(Animation animation) {
                 vMenuBg.setOnClickListener(null);
-                initImmersionBar();
             }
 
             @Override
@@ -390,7 +342,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
                 readAdjustMarginPop.setVisibility(View.INVISIBLE);
                 readInterfacePop.setVisibility(View.INVISIBLE);
                 moreSettingPop.setVisibility(View.INVISIBLE);
-                initImmersionBar();
             }
 
             @Override
@@ -410,7 +361,7 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         this.setSupportActionBar(toolbar);
         setupActionBar();
         mPresenter.initData(this);
-        appBar.setPadding(0, ScreenUtils.getStatusBarHeight(), 0, 0);
+        appBar.setPadding(0, 0, 0, 0);
         appBar.setBackgroundColor(ThemeStore.primaryColor(this));
         //弹窗
         moDialogHUD = new MoDialogHUD(this);
@@ -557,7 +508,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             @Override
             public void bgChange() {
                 pageView.setBackground(readBookControl.getTextBackground(ReadBookActivity.this));
-                initImmersionBar();
                 if (mPageLoader != null) {
                     mPageLoader.refreshUi();
                 }
@@ -580,7 +530,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
         moreSettingPop.setListener(new MoreSettingPop.Callback() {
             @Override
             public void upBar() {
-                initImmersionBar();
             }
 
             @Override
@@ -1311,7 +1260,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
             if (mPageLoader != null) {
                 mPageLoader.refreshUi();
             }
-            initImmersionBar();
         }
     }
 
@@ -1484,7 +1432,6 @@ public class ReadBookActivity extends MBaseActivity<ReadBookContract.Presenter> 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        initImmersionBar();
     }
 
     @SuppressLint("DefaultLocale")

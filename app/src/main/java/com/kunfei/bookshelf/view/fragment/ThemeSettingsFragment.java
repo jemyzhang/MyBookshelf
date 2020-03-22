@@ -48,7 +48,6 @@ public class ThemeSettingsFragment extends PreferenceFragment implements SharedP
                 break;
             case "immersionStatusBar":
             case "navigationBarColorChange":
-                settingActivity.initImmersionBar();
                 RxBus.get().post(RxBusTag.IMMERSION_CHANGE, true);
                 break;
         }

@@ -7,8 +7,6 @@ public interface MainContract {
 
     interface View extends IView {
 
-        void initImmersionBar();
-
         /**
          * 取消弹出框
          */

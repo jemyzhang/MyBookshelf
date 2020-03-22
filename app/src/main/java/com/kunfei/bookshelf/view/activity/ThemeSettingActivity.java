@@ -85,8 +85,4 @@ public class ThemeSettingActivity extends MBaseActivity {
         super.onBackPressed();
     }
 
-    @Override
-    public void initImmersionBar() {
-        super.initImmersionBar();
-    }
 }
